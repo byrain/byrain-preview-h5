@@ -1,4 +1,4 @@
-import VotePreviewTool from './components/VotePreviewTool'
+// import VotePreviewTool from './components/VotePreviewTool'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
 function App() {
@@ -23,7 +23,7 @@ function App() {
                   投票预览工具
                 </Link>
               </h1>
-              <VotePreviewTool />
+              {/* <VotePreviewTool /> */}
             </>
           } />
         </Routes>
