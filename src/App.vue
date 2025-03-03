@@ -8,7 +8,9 @@
     <!-- 显示或隐藏的文本区域 -->
     <p v-if="showText" class="animated-text">This is some cool text that can appear and disappear!</p>
     <!-- 鼠标悬停变色的元素 -->
-    <div class="hover-color-change" @mouseenter="changeColor('red')" @mouseleave="changeColor('blue')">
+    <!-- 修改这一行，绑定背景颜色 -->
+    <div class="hover-color-change" @mouseenter="changeColor('red')" @mouseleave="changeColor('blue')"
+      :style="{ backgroundColor: textColor }">
       Hover me to change color
     </div>
   </div>
@@ -71,7 +73,6 @@ button {
 .hover-color-change {
   margin-top: 20px;
   padding: 10px;
-  background-color: blue;
   color: white;
   transition: background-color 0.3s;
 }
