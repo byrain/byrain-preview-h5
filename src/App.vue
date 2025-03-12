@@ -6,7 +6,9 @@
 
     <nav>
       <router-link to="/">Home</router-link> |
-      <a href="/workplace-seating-query-system.html">工位查询</a>
+      <li> <a href="/2048.html"> AI 生成的小游戏 2048 </a></li>
+      <li><a href="/snake.html"> AI 生成的小游戏 贪吃蛇 </a></li>
+      <li><a href="/workplace-seating-query-system.html">工位查询</a></li>
     </nav>
 
     <!-- 按钮，点击触发方法 -->
