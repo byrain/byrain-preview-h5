@@ -3,6 +3,12 @@
   <div id="app">
     <!-- 标题 -->
     <h1>Welcome to My Simple Vue App</h1>
+
+    <nav>
+      <router-link to="/">Home</router-link> |
+      <a href="/workplace-seating-query-system.html">工位查询</a>
+    </nav>
+
     <!-- 按钮，点击触发方法 -->
     <button @click="toggleText">Toggle Text</button>
     <!-- 显示或隐藏的文本区域 -->

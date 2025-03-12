@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工区座位查询系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            light: '#5E6AD2',
+                            dark: '#8E96FF'
+                        },
+                        background: {
+                            light: '#F7F8FA',
+                            dark: '#151718'
+                        },
+                        card: {
+                            light: '#FFFFFF',
+                            dark: '#1E2023'
+                        },
+                        text: {
+                            light: '#111827',
+                            darkLight: '#6B7280',
+                            dark: '#F3F4F6',
+                            darkMuted: '#9CA3AF'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/css">
+        .search-input:focus + .search-icon {
+            color: var(--tw-text-opacity);
+        }
+        .mascot {
+            pointer-events: none;
+            z-index: 0;
+        }
+        /* 平滑过渡效果 */
+        * {
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(156, 163, 175, 0.5);
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background-color: rgba(75, 85, 99, 0.5);
+        }
+        /* 数据加载动画 */
+        @keyframes shimmer {
+            0% {
+                background-position: -468px 0;
+            }
+            100% {
+                background-position: 468px 0;
+            }
+        }
+        .loading-shimmer {
+            background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
+            background-size: 800px 104px;
+            animation: shimmer 1.5s infinite linear;
+        }
+        .dark .loading-shimmer {
+            background: linear-gradient(to right, #1E2023 8%, #282A2E 18%, #1E2023 33%);
+            background-size: 800px 104px;
+            animation: shimmer 1.5s infinite linear;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark transition-colors duration-200">
+    <!-- 检测系统模式并设置深色/浅色模式 -->
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <!-- 导航栏 -->
+    <header class="sticky top-0 bg-white dark:bg-card-dark border-b border-gray-200 dark:border-gray-800 z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-building text-primary-light dark:text-primary-dark"></i>
+                <h1 class="text-lg font-semibold">工区座位查询系统</h1>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none" aria-label="切换主题">
+                    <i class="fa-solid fa-moon hidden dark:block text-yellow-300"></i>
+                    <i class="fa-solid fa-sun block dark:hidden text-yellow-500"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6 relative animation-fade-in">
+        <!-- 吉祥物（半透明背景图）- 适当调整大小 -->
+        <div class="mascot absolute right-0 bottom-0 opacity-10 dark:opacity-5 w-96 h-96 overflow-hidden">
+            <img src="https://s21.ax1x.com/2025/03/12/pEUEekF.png" alt="公司吉祥物" class="object-contain w-full h-full">
+        </div>
+
+        <!-- 主要内容 - 覆盖在吉祥物上方 -->
+        <div class="relative z-1">
+            <!-- 搜索区域 -->
+            <section class="mb-8 max-w-2xl mx-auto animate-fade-in">
+                <div class="bg-card-light dark:bg-card-dark rounded-lg shadow-sm p-6 border border-gray-100 dark:border-gray-800">
+                    <h2 class="text-xl font-medium mb-4">快速查询</h2>
+                    <p class="text-text-darkLight dark:text-text-darkMuted mb-6">输入员工姓名或工号，快速找到对应的工区座位和团队信息</p>
+                    
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="search-input"
+                            class="search-input w-full py-3 px-4 pl-12 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent outline-none transition-all"
+                            placeholder="输入姓名或工号进行查询..."
+                        >
+                        <i class="fas fa-search search-icon absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        <button class="quick-filter px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition">研发部</button>
+                        <button class="quick-filter px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition">设计部</button>
+                        <button class="quick-filter px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition">市场部</button>
+                        <button class="quick-filter px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition">人事部</button>
+                        <button class="quick-filter px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition">财务部</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 结果展示 -->
+            <section id="results" class="mb-10 max-w-4xl mx-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-medium">查询结果</h2>
+                    <span id="result-count" class="text-sm text-text-darkLight dark:text-text-darkMuted">共 <span id="count-value">8</span> 位同事</span>
+                </div>
+
+                <!-- 结果列表 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
+                    <!-- 员工卡片 -->
+                    <div class="employee-card bg-card-light dark:bg-card-dark rounded-lg border border-gray-100 dark:border-gray-800 p-4 hover:shadow-md transition-all duration-200 cursor-pointer transform hover:scale-[1.01]">
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-300 font-medium mr-3">
+                                张
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">张小明</h3>
+                                <p class="text-sm text-text-darkLight dark:text-text-darkMuted">研发部 / 前端组</p>
+                                <div class="mt-2 flex items-center text-xs text-text-darkLight dark:text-text-darkMuted">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <span>A区 3楼 座位号：A3-42</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="employee-card bg-card-light dark:bg-card-dark rounded-lg border border-gray-100 dark:border-gray-800 p-4 hover:shadow-md transition-all duration-200 cursor-pointer transform hover:scale-[1.01]">
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center text-green-600 dark:text-green-300 font-medium mr-3">
+                                李
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">李华</h3>
+                                <p class="text-sm text-text-darkLight dark:text-text-darkMuted">研发部 / 后端组</p>
+                                <div class="mt-2 flex items-center text-xs text-text-darkLight dark:text-text-darkMuted">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <span>A区 3楼 座位号：A3-45</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="employee-card bg-card-light dark:bg-card-dark rounded-lg border border-gray-100 dark:border-gray-800 p-4 hover:shadow-md transition-all duration-200 cursor-pointer transform hover:scale-[1.01]">
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center text-purple-600 dark:text-purple-300 font-medium mr-3">
+                                王
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">王丽</h3>
+                                <p class="text-sm text-text-darkLight dark:text-text-darkMuted">设计部 / UI组</p>
+                                <div class="mt-2 flex items-center text-xs text-text-darkLight dark:text-text-darkMuted">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <span>B区 2楼 座位号：B2-12</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="employee-card bg-card-light dark:bg-card-dark rounded-lg border border-gray-100 dark:border-gray-800 p-4 hover:shadow-md transition-all duration-200 cursor-pointer transform hover:scale-[1.01]">
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center text-red-600 dark:text-red-300 font-medium mr-3">
+                                陈
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">陈明</h3>
+                                <p class="text-sm text-text-darkLight dark:text-text-darkMuted">市场部 / 营销组</p>
+                                <div class="mt-2 flex items-center text-xs text-text-darkLight dark:text-text-darkMuted">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <span>C区 4楼 座位号：C4-03</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="employee-card bg-card-light dark:bg-card-dark rounded-lg border border-gray-100 dark:border-gray-800 p-4 hover:shadow-md transition-all duration-200 cursor-pointer transform hover:scale-[1.01]">
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center text-yellow-600 dark:text-yellow-300 font-medium mr-3">
+                                刘
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">刘芳</h3>
+                                <p class="text-sm text-text-darkLight dark:text-text-darkMuted">人事部</p>
+                                <div class="mt-2 flex items-center text-xs text-text-darkLight dark:text-text-darkMuted">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <span>D区 1楼 座位号：D1-08</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="employee-card bg-card-light dark:bg-card-dark rounded-lg border border-gray-100 dark:border-gray-800 p-4 hover:shadow-md transition-all duration-200 cursor-pointer transform hover:scale-[1.01]">
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-medium mr-3">
+                                赵
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">赵强</h3>
+                                <p class="text-sm text-text-darkLight dark:text-text-darkMuted">研发部 / 测试组</p>
+                                <div class="mt-2 flex items-center text-xs text-text-darkLight dark:text-text-darkMuted">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <span>A区 4楼 座位号：A4-21</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="employee-card bg-card-light dark:bg-card-dark rounded-lg border border-gray-100 dark:border-gray-800 p-4 hover:shadow-md transition-all duration-200 cursor-pointer transform hover:scale-[1.01]">
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 bg-pink-100 dark:bg-pink-900 rounded-full flex items-center justify-center text-pink-600 dark:text-pink-300 font-medium mr-3">
+                                周
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">周雪</h3>
+                                <p class="text-sm text-text-darkLight dark:text-text-darkMuted">财务部</p>
+                                <div class="mt-2 flex items-center text-xs text-text-darkLight dark:text-text-darkMuted">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <span>D区 2楼 座位号：D2-15</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="employee-card bg-card-light dark:bg-card-dark rounded-lg border border-gray-100 dark:border-gray-800 p-4 hover:shadow-md transition-all duration-200 cursor-pointer transform hover:scale-[1.01]">
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 bg-teal-100 dark:bg-teal-900 rounded-full flex items-center justify-center text-teal-600 dark:text-teal-300 font-medium mr-3">
+                                孙
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">孙伟</h3>
+                                <p class="text-sm text-text-darkLight dark:text-text-darkMuted">设计部 / 视觉组</p>
+                                <div class="mt-2 flex items-center text-xs text-text-darkLight dark:text-text-darkMuted">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <span>B区 2楼 座位号：B2-19</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 工区分布图 -->
+            <section class="max-w-4xl mx-auto mb-16 animate-fade-in">
+                <h2 class="text-xl font-medium mb-4">工区分布图</h2>
+                <div class="bg-card-light dark:bg-card-dark rounded-lg border border-gray-100 dark:border-gray-800 p-6 overflow-hidden">
+                    <div class="flex flex-wrap gap-4">
+                        <div class="flex-1 min-w-[200px]">
+                            <h3 class="font-medium mb-2">A区 - 研发部</h3>
+                            <div class="h-[120px] bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-sm relative overflow-hidden">
+                                <div class="absolute right-3 top-3 text-xs text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-800 px-2 py-0.5 rounded-full">3-4楼</div>
+                                <p class="text-text-darkLight dark:text-text-darkMuted mt-4">
+                                    <i class="fas fa-users mr-1"></i> 42人
+                                </p>
+                                <p class="text-text-darkLight dark:text-text-darkMuted mt-1">
+                                    <i class="fas fa-door-open mr-1"></i> 电梯旁右转
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 min-w-[200px]">
+                            <h3 class="font-medium mb-2">B区 - 设计部</h3>
+                            <div class="h-[120px] bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 text-sm relative overflow-hidden">
+                                <div class="absolute right-3 top-3 text-xs text-purple-600 dark:text-purple-300 bg-purple-100 dark:bg-purple-800 px-2 py-0.5 rounded-full">2楼</div>
+                                <p class="text-text-darkLight dark:text-text-darkMuted mt-4">
+                                    <i class="fas fa-users mr-1"></i> 18人
+                                </p>
+                                <p class="text-text-darkLight dark:text-text-darkMuted mt-1">
+                                    <i class="fas fa-door-open mr-1"></i> 电梯旁左转
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 min-w-[200px]">
+                            <h3 class="font-medium mb-2">C区 - 市场部</h3>
+                            <div class="h-[120px] bg-red-50 dark:bg-red-900/20 rounded-lg p-3 text-sm relative overflow-hidden">
+                                <div class="absolute right-3 top-3 text-xs text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-800 px-2 py-0.5 rounded-full">4楼</div>
+                                <p class="text-text-darkLight dark:text-text-darkMuted mt-4">
+                                    <i class="fas fa-users mr-1"></i> 15人
+                                </p>
+                                <p class="text-text-darkLight dark:text-text-darkMuted mt-1">
+                                    <i class="fas fa-door-open mr-1"></i> 4号会议室旁
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 min-w-[200px]">
+                            <h3 class="font-medium mb-2">D区 - 行政人事</h3>
+                            <div class="h-[120px] bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-sm relative overflow-hidden">
+                                <div class="absolute right-3 top-3 text-xs text-green-600 dark:text-green-300 bg-green-100 dark:bg-green-800 px-2 py-0.5 rounded-full">1-2楼</div>
+                                <p class="text-text-darkLight dark:text-text-darkMuted mt-4">
+                                    <i class="fas fa-users mr-1"></i> 22人
+                                </p>
+                                <p class="text-text-darkLight dark:text-text-darkMuted mt-1">
+                                    <i class="fas fa-door-open mr-1"></i> 前台右侧
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="border-t border-gray-200 dark:border-gray-800 py-4">
+        <div class="container mx-auto px-4 text-center text-sm text-text-darkLight dark:text-text-darkMuted">
+            &copy; 2025 工区座位查询系统 | 公司内部系统
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 深色/浅色模式切换
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        });
+
+        // 搜索功能
+        const searchInput = document.getElementById('search-input');
+        const employeeCards = document.querySelectorAll('.employee-card');
+        const resultCount = document.getElementById('count-value');
+        
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            let matchCount = 0;
+            
+            // 简单搜索逻辑 - 实际项目中可扩展为更复杂的搜索
+            employeeCards.forEach(card => {
+                const employeeName = card.querySelector('h3').textContent.toLowerCase();
+                const employeeDept = card.querySelector('p').textContent.toLowerCase();
+                const employeeSeat = card.querySelector('.mt-2 span').textContent.toLowerCase();
+                
+                if (employeeName.includes(searchTerm) || 
+                    employeeDept.includes(searchTerm) || 
+                    employeeSeat.includes(searchTerm)) {
+                    card.style.display = '';
+                    matchCount++;
+                    
+                    // 添加高亮效果
+                    if (searchTerm.length > 0) {
+                        card.classList.add('ring-2', 'ring-primary-light', 'dark:ring-primary-dark');
+                        // 添加小动画
+                        card.style.animation = 'pulse 1s';
+                        setTimeout(() => {
+                            card.style.animation = '';
+                        }, 1000);
+                    } else {
+                        card.classList.remove('ring-2', 'ring-primary-light', 'dark:ring-primary-dark');
+                    }
+                } else {
+                    card.style.display = 'none';
+                    card.classList.remove('ring-2', 'ring-primary-light', 'dark:ring-primary-dark');
+                }
+            });
+            
+            resultCount.textContent = matchCount;
+        });
+        
+        // 快速筛选按钮
+        const quickFilters = document.querySelectorAll('.quick-filter');
+        quickFilters.forEach(filter => {
+            filter.addEventListener('click', () => {
+                const filterText = filter.textContent.trim();
+                searchInput.value = filterText;
+                
+                // 触发搜索
+                const event = new Event('input', { bubbles: true });
+                searchInput.dispatchEvent(event);
+                
+                // 添加微交互
+                filter.classList.add('bg-primary-light', 'dark:bg-primary-dark', 'text-white');
+                setTimeout(() => {
+                    filter.classList.remove('bg-primary-light', 'dark:bg-primary-dark', 'text-white');
+                }, 500);
+            });
+        });
+        
+        // 员工卡片点击交互
+        employeeCards.forEach(card => {
+            card.addEventListener('click', () => {
+                card.classList.add('scale-[1.02]', 'shadow-lg');
+                setTimeout(() => {
+                    card.classList.remove('scale-[1.02]', 'shadow-lg');
+                }, 300);
+                
+                // 这里可以添加查看详情弹窗等功能
+                const employeeName = card.querySelector('h3').textContent;
+                const employeeDept = card.querySelector('p').textContent;
+                const employeeSeat = card.querySelector('.mt-2 span').textContent;
+                
+                console.log(`查看 ${employeeName} 的详细信息: ${employeeDept}, 座位: ${employeeSeat}`);
+            });
+        });
+        
+        // 页面载入动画
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('main').classList.add('animate-fade-in');
+        });
+    </script>
+</body>
+</html>
