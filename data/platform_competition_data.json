@@ -1,0 +1,185 @@
+{
+  "platform_data": {
+    "爱奇艺": {
+      "total_dramas": 25,
+      "average_rating": 8.1,
+      "average_discussion": 580000,
+      "average_top10_days": 42,
+      "average_play_count": 820000000,
+      "ai_usage_rate": 0.76,
+      "censorship_approval_rate": 0.92,
+      "average_approval_time": 75,
+      "user_demographics": {
+        "18-24": 0.28,
+        "25-34": 0.35,
+        "35-44": 0.22,
+        "45+": 0.15
+      },
+      "genre_distribution": {
+        "悬疑犯罪": 0.32,
+        "古装剧": 0.24,
+        "都市情感": 0.18,
+        "科幻": 0.12,
+        "其他": 0.14
+      },
+      "subscription_model": "会员订阅+广告",
+      "original_content_ratio": 0.65,
+      "competitive_advantage": "高质量原创内容和悬疑剧集"
+    },
+    "腾讯视频": {
+      "total_dramas": 28,
+      "average_rating": 7.9,
+      "average_discussion": 620000,
+      "average_top10_days": 40,
+      "average_play_count": 850000000,
+      "ai_usage_rate": 0.82,
+      "censorship_approval_rate": 0.89,
+      "average_approval_time": 80,
+      "user_demographics": {
+        "18-24": 0.30,
+        "25-34": 0.38,
+        "35-44": 0.20,
+        "45+": 0.12
+      },
+      "genre_distribution": {
+        "都市情感": 0.30,
+        "古装剧": 0.25,
+        "悬疑犯罪": 0.20,
+        "科幻": 0.15,
+        "其他": 0.10
+      },
+      "subscription_model": "会员订阅+广告",
+      "original_content_ratio": 0.70,
+      "competitive_advantage": "IP改编和都市情感剧"
+    },
+    "优酷": {
+      "total_dramas": 22,
+      "average_rating": 8.0,
+      "average_discussion": 480000,
+      "average_top10_days": 38,
+      "average_play_count": 720000000,
+      "ai_usage_rate": 0.68,
+      "censorship_approval_rate": 0.86,
+      "average_approval_time": 70,
+      "user_demographics": {
+        "18-24": 0.25,
+        "25-34": 0.32,
+        "35-44": 0.28,
+        "45+": 0.15
+      },
+      "genre_distribution": {
+        "古装剧": 0.35,
+        "历史正剧": 0.25,
+        "悬疑犯罪": 0.18,
+        "都市情感": 0.12,
+        "其他": 0.10
+      },
+      "subscription_model": "会员订阅+广告",
+      "original_content_ratio": 0.60,
+      "competitive_advantage": "古装剧和历史正剧"
+    },
+    "芒果TV": {
+      "total_dramas": 18,
+      "average_rating": 7.6,
+      "average_discussion": 320000,
+      "average_top10_days": 35,
+      "average_play_count": 650000000,
+      "ai_usage_rate": 0.72,
+      "censorship_approval_rate": 0.90,
+      "average_approval_time": 60,
+      "user_demographics": {
+        "18-24": 0.35,
+        "25-34": 0.30,
+        "35-44": 0.20,
+        "45+": 0.15
+      },
+      "genre_distribution": {
+        "都市情感": 0.40,
+        "职场剧": 0.25,
+        "悬疑犯罪": 0.15,
+        "青春校园": 0.12,
+        "其他": 0.08
+      },
+      "subscription_model": "会员订阅+广告",
+      "original_content_ratio": 0.75,
+      "competitive_advantage": "都市情感和职场剧"
+    },
+    "哔哩哔哩": {
+      "total_dramas": 15,
+      "average_rating": 7.5,
+      "average_discussion": 280000,
+      "average_top10_days": 32,
+      "average_play_count": 580000000,
+      "ai_usage_rate": 0.85,
+      "censorship_approval_rate": 0.82,
+      "average_approval_time": 65,
+      "user_demographics": {
+        "18-24": 0.45,
+        "25-34": 0.35,
+        "35-44": 0.15,
+        "45+": 0.05
+      },
+      "genre_distribution": {
+        "青春校园": 0.40,
+        "科幻": 0.20,
+        "都市情感": 0.15,
+        "悬疑犯罪": 0.15,
+        "其他": 0.10
+      },
+      "subscription_model": "会员订阅+广告",
+      "original_content_ratio": 0.80,
+      "competitive_advantage": "青春校园和二次元相关内容"
+    },
+    "抖音短剧": {
+      "total_dramas": 35,
+      "average_rating": 7.2,
+      "average_discussion": 320000,
+      "average_top10_days": 36,
+      "average_play_count": 380000000,
+      "ai_usage_rate": 0.90,
+      "censorship_approval_rate": 0.78,
+      "average_approval_time": 35,
+      "user_demographics": {
+        "18-24": 0.50,
+        "25-34": 0.30,
+        "35-44": 0.15,
+        "45+": 0.05
+      },
+      "genre_distribution": {
+        "都市情感": 0.30,
+        "悬疑推理": 0.25,
+        "都市奇幻": 0.20,
+        "职场": 0.15,
+        "其他": 0.10
+      },
+      "subscription_model": "免费+广告",
+      "original_content_ratio": 0.95,
+      "competitive_advantage": "短剧形式和高效内容生产"
+    },
+    "CCTV": {
+      "total_dramas": 12,
+      "average_rating": 7.5,
+      "average_discussion": 180000,
+      "average_top10_days": 35,
+      "average_play_count": 520000000,
+      "ai_usage_rate": 0.50,
+      "censorship_approval_rate": 0.98,
+      "average_approval_time": 25,
+      "user_demographics": {
+        "18-24": 0.10,
+        "25-34": 0.20,
+        "35-44": 0.35,
+        "45+": 0.35
+      },
+      "genre_distribution": {
+        "主旋律": 0.45,
+        "历史正剧": 0.30,
+        "都市情感": 0.15,
+        "其他": 0.10
+      },
+      "subscription_model": "免费",
+      "original_content_ratio": 0.90,
+      "competitive_advantage": "主旋律和历史正剧"
+    }
+  }
+}

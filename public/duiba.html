@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XX集团(xxxxx.HK)股票分析报告</title>
+    <!-- 引入 Vue.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.2.47/vue.global.min.js"></script>
+    <!-- 引入 ECharts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.2/echarts.min.js"></script>
+    <!-- 引入 Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 引入 Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .chart-container {
+            height: 400px;
+            width: 100%;
+        }
+
+        .overview-item {
+            text-align: center;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            margin-bottom: 15px;
+        }
+
+        .news-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .news-date {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .financial-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .financial-label {
+            font-weight: bold;
+        }
+
+        .financial-value {
+            color: #495057;
+        }
+
+        .positive {
+            color: #198754;
+        }
+
+        .negative {
+            color: #dc3545;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #0d6efd;
+        }
+
+        footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            background-color: #f8f9fa;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="container py-4">
+        <header class="pb-3 mb-4 border-bottom">
+            <div class="d-flex align-items-center text-dark text-decoration-none">
+                <span class="fs-4">XX集团(xxxxx.HK)股票分析报告</span>
+                <span class="ms-auto">生成日期: {{ currentDate }}</span>
+            </div>
+        </header>
+
+        <div class="p-3 bg-light rounded-3 mb-4">
+            <div class="container-fluid">
+                <h1 class="display-5 fw-bold">XX集团 <small class="text-muted">(xxxxx.HK)</small></h1>
+                <p class="fs-4">{{ companyDescription }}</p>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="overview-item">
+                            <h3 class="fs-2">{{ currentPrice }} HKD</h3>
+                            <p :class="priceChange >= 0 ? 'positive' : 'negative'">
+                                <i :class="priceChange >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                                {{ priceChange }} ({{ priceChangePercentage }}%)
+                            </p>
+                            <p class="text-muted">当前价格</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="overview-item">
+                            <h3 class="fs-2">{{ marketCap }}</h3>
+                            <p class="text-muted">市值</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="overview-item">
+                            <h3 class="fs-2">{{ volume }}</h3>
+                            <p class="text-muted">成交量</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pills-chart-tab" data-bs-toggle="pill" data-bs-target="#pills-chart"
+                    type="button" role="tab" aria-controls="pills-chart" aria-selected="true">股价走势</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-news-tab" data-bs-toggle="pill" data-bs-target="#pills-news"
+                    type="button" role="tab" aria-controls="pills-news" aria-selected="false">最新动态</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-financial-tab" data-bs-toggle="pill"
+                    data-bs-target="#pills-financial" type="button" role="tab" aria-controls="pills-financial"
+                    aria-selected="false">财务状况</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-analysis-tab" data-bs-toggle="pill" data-bs-target="#pills-analysis"
+                    type="button" role="tab" aria-controls="pills-analysis" aria-selected="false">分析报告</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="pills-tabContent">
+            <!-- 股价走势 -->
+            <div class="tab-pane fade show active" id="pills-chart" role="tabpanel" aria-labelledby="pills-chart-tab">
+                <div class="row">
+                    <div class="col-md-12 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">股价走势 (近6个月)</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="btn-group mb-3" role="group" aria-label="时间范围">
+                                    <button @click="changeChartTimeRange('1M')" type="button" class="btn"
+                                        :class="timeRange === '1M' ? 'btn-primary' : 'btn-outline-primary'">1个月</button>
+                                    <button @click="changeChartTimeRange('3M')" type="button" class="btn"
+                                        :class="timeRange === '3M' ? 'btn-primary' : 'btn-outline-primary'">3个月</button>
+                                    <button @click="changeChartTimeRange('6M')" type="button" class="btn"
+                                        :class="timeRange === '6M' ? 'btn-primary' : 'btn-outline-primary'">6个月</button>
+                                    <button @click="changeChartTimeRange('1Y')" type="button" class="btn"
+                                        :class="timeRange === '1Y' ? 'btn-primary' : 'btn-outline-primary'">1年</button>
+                                </div>
+                                <div id="stockChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">成交量</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="volumeChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">与恒生指数对比</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="compareChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 最新动态 -->
+            <div class="tab-pane fade" id="pills-news" role="tabpanel" aria-labelledby="pills-news-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">企业最新动态</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="news-item" v-for="(item, index) in newsItems" :key="index">
+                            <h5>{{ item.title }}</h5>
+                            <p>{{ item.content }}</p>
+                            <p class="news-date">{{ item.date }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 财务状况 -->
+            <div class="tab-pane fade" id="pills-financial" role="tabpanel" aria-labelledby="pills-financial-tab">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">主要财务指标</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="financial-metric" v-for="(item, index) in financialMetrics" :key="index">
+                                    <span class="financial-label">{{ item.label }}</span>
+                                    <span class="financial-value">{{ item.value }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">收入与利润</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="financialChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分析报告 -->
+            <div class="tab-pane fade" id="pills-analysis" role="tabpanel" aria-labelledby="pills-analysis-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">分析报告</h5>
+                    </div>
+                    <div class="card-body">
+                        <h4>公司概览</h4>
+                        <p>XX集团是中国领先的用户运营服务平台，通过提供积分商城SaaS产品和营销服务来帮助企业提升用户活跃度、留存率和变现能力。公司于YYYY年5月在香港联交所主板上市（股票代码：xxxxx.HK）。
+                        </p>
+
+                        <h4>业务亮点</h4>
+                        <ul>
+                            <li>积分商城SaaS平台：为企业提供积分兑换、会员管理及用户运营解决方案，帮助企业建立完整的用户激励体系</li>
+                            <li>营销服务：提供基于效果的互动式营销服务，帮助企业获取新用户</li>
+                            <li>游戏服务：提供小游戏开发与运营服务，丰富企业用户的互动体验</li>
+                            <li>大数据与AI技术：通过数据分析和人工智能技术，为企业提供精准的用户运营策略</li>
+                        </ul>
+
+                        <h4>行业趋势</h4>
+                        <p>用户运营SaaS市场在中国正处于快速发展阶段，随着企业数字化转型的加速，对用户运营服务的需求持续增长。特别是在金融、电信、零售和互联网行业，对提升用户价值和忠诚度的需求尤为强烈。</p>
+
+                        <h4>优势与挑战</h4>
+                        <p><strong>优势：</strong></p>
+                        <ul>
+                            <li>先发优势：作为行业先行者，已建立广泛的客户基础和品牌认知</li>
+                            <li>技术壁垒：在用户行为分析和运营策略方面积累了丰富的数据和经验</li>
+                            <li>多元化业务：通过SaaS平台和营销服务的结合，形成了完整的用户运营生态</li>
+                        </ul>
+                        <p><strong>挑战：</strong></p>
+                        <ul>
+                            <li>竞争加剧：随着市场扩大，更多竞争对手进入，竞争压力增加</li>
+                            <li>技术迭代：需要持续投入研发以保持技术领先</li>
+                            <li>客户依赖：部分行业客户的预算受宏观经济影响较大</li>
+                        </ul>
+
+                        <h4>投资建议</h4>
+                        <p>XX集团作为中国用户运营SaaS市场的领先企业，具有良好的成长潜力。随着中国企业对用户运营重视程度的提升，公司有望持续受益于这一趋势。</p>
+                        <p>考虑到以下因素：</p>
+                        <ul>
+                            <li>SaaS业务模式带来的稳定收入</li>
+                            <li>数字化转型加速带来的市场机遇</li>
+                            <li>技术创新能力和产品迭代速度</li>
+                            <li>多元化的客户结构和行业覆盖</li>
+                        </ul>
+                        <p>建议投资者关注该股的长期发展潜力，尤其是公司在AI和大数据应用方面的布局可能带来的增长机会。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>数据来源：历史公开数据 | 最后更新：{{ currentDate }}</p>
+            <p><small>免责声明：本报告仅供参考，不构成任何投资建议。投资者应自行承担投资风险。</small></p>
+        </footer>
+    </div>
+
+    <!-- 引入 Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+
+        const app = createApp({
+            setup() {
+                const currentDate = ref(new Date().toLocaleDateString('zh-CN'));
+                const companyDescription = ref('XX集团是中国领先的用户运营SaaS服务提供商，为企业提供积分商城SaaS产品和营销服务解决方案');
+                const currentPrice = ref('1.24');
+                const priceChange = ref('-0.12');
+                const priceChangePercentage = ref('-8.82');
+                const marketCap = ref('14.8亿港元');
+                const volume = ref('65.2万');
+                const timeRange = ref('6M');
+
+                const newsItems = ref([
+                    {
+                        title: 'XX集团公布YYYY财年第三季度财报',
+                        content: '公司第三季度收入同比增长12%，达到1.98亿元人民币，SaaS业务收入占比持续提升至65%。',
+                        date: 'YYYY年10月15日'
+                    },
+                    {
+                        title: 'XX集团发布新一代用户运营平台',
+                        content: '新平台整合了AI和大数据分析能力，帮助企业实现更精准的用户触达和更高效的营销转化。',
+                        date: 'YYYY年9月8日'
+                    },
+                    {
+                        title: 'XX集团与某国有大型银行达成战略合作',
+                        content: '双方将在金融用户数字化运营领域展开深度合作，共同打造智能营销生态系统。',
+                        date: 'YYYY年8月25日'
+                    },
+                    {
+                        title: 'XX集团推出小程序电商解决方案',
+                        content: '新解决方案将帮助传统零售企业快速搭建私域流量池，提升用户复购率和销售转化。',
+                        date: 'YYYY年7月10日'
+                    },
+                    {
+                        title: 'XX集团完成新一轮股份回购计划',
+                        content: '公司宣布已完成总额5,000万港元的股份回购计划，展示了管理层对公司未来发展的信心。',
+                        date: 'YYYY年6月28日'
+                    }
+                ]);
+
+                const financialMetrics = ref([
+                    { label: '市盈率(TTM)', value: '21.6' },
+                    { label: '市净率', value: '1.8' },
+                    { label: '收入(TTM)', value: '8.45亿元人民币' },
+                    { label: '净利润(TTM)', value: '5500万元人民币' },
+                    { label: '毛利率', value: '58.5%' },
+                    { label: '净利率', value: '6.5%' },
+                    { label: '现金流', value: '1.2亿元人民币' },
+                    { label: '资产负债率', value: '32.8%' },
+                    { label: '每股净资产', value: '5.48元人民币' },
+                    { label: '股息收益率', value: '1.2%' }
+                ]);
+
+                // 股价历史数据（模拟）
+                const generateRandomData = (startPrice, days, volatility) => {
+                    const data = [];
+                    let currentPrice = startPrice;
+                    const now = new Date();
+
+                    for (let i = days; i >= 0; i--) {
+                        const date = new Date(now);
+                        date.setDate(date.getDate() - i);
+                        const dateStr = date.toISOString().split('T')[0];
+
+                        // 生成随机价格波动
+                        const change = (Math.random() - 0.5) * volatility * currentPrice;
+                        currentPrice = Math.max(0.5, currentPrice + change);
+
+                        data.push({
+                            date: dateStr,
+                            price: parseFloat(currentPrice.toFixed(2)),
+                            volume: Math.floor(Math.random() * 1000000) + 200000
+                        });
+                    }
+                    return data;
+                };
+
+                // 生成6个月的数据
+                const stockData = ref(generateRandomData(1.85, 180, 0.03));
+                const hsiData = ref(generateRandomData(18500, 180, 0.01).map(item => ({
+                    date: item.date,
+                    price: item.price / 10000
+                })));
+
+                // 生成财务数据
+                const financialData = ref([
+                    { year: 'YYYY', revenue: 620, profit: 32 },
+                    { year: 'YYYY', revenue: 715, profit: 41 },
+                    { year: 'YYYY', revenue: 790, profit: 48 },
+                    { year: 'YYYY', revenue: 845, profit: 55 }
+                ]);
+
+                // 初始化图表
+                const initCharts = () => {
+                    // 初始化股价走势图
+                    const stockChart = echarts.init(document.getElementById('stockChart'));
+                    const filteredData = filterDataByTimeRange(stockData.value, timeRange.value);
+
+                    const stockOption = {
+                        tooltip: {
+                            trigger: 'axis',
+                            axisPointer: {
+                                type: 'cross'
+                            }
+                        },
+                        grid: {
+                            left: '3%',
+                            right: '4%',
+                            bottom: '3%',
+                            containLabel: true
+                        },
+                        xAxis: {
+                            type: 'category',
+                            data: filteredData.map(item => item.date),
+                            boundaryGap: false
+                        },
+                        yAxis: {
+                            type: 'value',
+                            axisLabel: {
+                                formatter: '{value} HKD'
+                            }
+                        },
+                        series: [{
+                            name: '股价',
+                            type: 'line',
+                            data: filteredData.map(item => item.price),
+                            smooth: true,
+                            lineStyle: {
+                                width: 3
+                            },
+                            itemStyle: {
+                                color: '#0d6efd'
+                            },
+                            areaStyle: {
+                                color: {
+                                    type: 'linear',
+                                    x: 0,
+                                    y: 0,
+                                    x2: 0,
+                                    y2: 1,
+                                    colorStops: [{
+                                        offset: 0,
+                                        color: 'rgba(13, 110, 253, 0.5)'
+                                    }, {
+                                        offset: 1,
+                                        color: 'rgba(13, 110, 253, 0.05)'
+                                    }]
+                                }
+                            },
+                            markPoint: {
+                                data: [
+                                    { type: 'max', name: '最高值' },
+                                    { type: 'min', name: '最低值' }
+                                ]
+                            }
+                        }]
+                    };
+                    stockChart.setOption(stockOption);
+
+                    // 初始化成交量图表
+                    const volumeChart = echarts.init(document.getElementById('volumeChart'));
+                    const volumeOption = {
+                        tooltip: {
+                            trigger: 'axis',
+                            axisPointer: { type: 'shadow' }
+                        },
+                        grid: {
+                            left: '3%',
+                            right: '4%',
+                            bottom: '3%',
+                            containLabel: true
+                        },
+                        xAxis: {
+                            type: 'category',
+                            data: filteredData.map(item => item.date),
+                            axisLabel: {
+                                interval: Math.floor(filteredData.length / 6),
+                                formatter: function (value) {
+                                    return value.substring(5);
+                                }
+                            }
+                        },
+                        yAxis: {
+                            type: 'value',
+                            axisLabel: {
+                                formatter: function (value) {
+                                    return (value / 10000).toFixed(1) + '万';
+                                }
+                            }
+                        },
+                        series: [{
+                            name: '成交量',
+                            type: 'bar',
+                            data: filteredData.map(item => item.volume),
+                            itemStyle: {
+                                color: '#6c757d'
+                            }
+                        }]
+                    };
+                    volumeChart.setOption(volumeOption);
+
+                    // 初始化对比图表
+                    const compareChart = echarts.init(document.getElementById('compareChart'));
+                    const filteredHsiData = filterDataByTimeRange(hsiData.value, timeRange.value);
+
+                    const compareOption = {
+                        tooltip: {
+                            trigger: 'axis'
+                        },
+                        legend: {
+                            data: ['XX集团', '恒生指数']
+                        },
+                        grid: {
+                            left: '3%',
+                            right: '4%',
+                            bottom: '3%',
+                            containLabel: true
+                        },
+                        xAxis: {
+                            type: 'category',
+                            boundaryGap: false,
+                            data: filteredData.map(item => item.date),
+                            axisLabel: {
+                                interval: Math.floor(filteredData.length / 6),
+                                formatter: function (value) {
+                                    return value.substring(5);
+                                }
+                            }
+                        },
+                        yAxis: [
+                            {
+                                type: 'value',
+                                name: 'XX集团',
+                                position: 'left',
+                                axisLabel: {
+                                    formatter: '{value} HKD'
+                                }
+                            },
+                            {
+                                type: 'value',
+                                name: '恒生指数',
+                                position: 'right',
+                                axisLabel: {
+                                    formatter: '{value}'
+                                }
+                            }
+                        ],
+                        series: [
+                            {
+                                name: 'XX集团',
+                                type: 'line',
+                                yAxisIndex: 0,
+                                data: filteredData.map(item => item.price),
+                                smooth: true
+                            },
+                            {
+                                name: '恒生指数',
+                                type: 'line',
+                                yAxisIndex: 1,
+                                data: filteredHsiData.map(item => item.price),
+                                smooth: true
+                            }
+                        ]
+                    };
+                    compareChart.setOption(compareOption);
+
+                    // 初始化财务图表
+                    const financialChart = echarts.init(document.getElementById('financialChart'));
+                    const financialOption = {
+                        tooltip: {
+                            trigger: 'axis',
+                            axisPointer: {
+                                type: 'shadow'
+                            }
+                        },
+                        legend: {
+                            data: ['收入', '利润']
+                        },
+                        grid: {
+                            left: '3%',
+                            right: '4%',
+                            bottom: '3%',
+                            containLabel: true
+                        },
+                        xAxis: {
+                            type: 'category',
+                            data: financialData.value.map(item => item.year)
+                        },
+                        yAxis: {
+                            type: 'value',
+                            axisLabel: {
+                                formatter: '{value}百万'
+                            }
+                        },
+                        series: [
+                            {
+                                name: '收入',
+                                type: 'bar',
+                                data: financialData.value.map(item => item.revenue)
+                            },
+                            {
+                                name: '利润',
+                                type: 'bar',
+                                data: financialData.value.map(item => item.profit)
+                            }
+                        ]
+                    };
+                    financialChart.setOption(financialOption);
+
+                    // 窗口大小变化时重新调整图表大小
+                    window.addEventListener('resize', function () {
+                        stockChart.resize();
+                        volumeChart.resize();
+                        compareChart.resize();
+                        financialChart.resize();
+                    });
+                };
+
+                // 根据时间范围过滤数据
+                const filterDataByTimeRange = (data, range) => {
+                    const days = {
+                        '1M': 30,
+                        '3M': 90,
+                        '6M': 180,
+                        '1Y': 365
+                    };
+
+                    if (range === '1Y') {
+                        return data;
+                    }
+
+                    return data.slice(-days[range]);
+                };
+
+                // 切换图表时间范围
+                const changeChartTimeRange = (range) => {
+                    timeRange.value = range;
+
+                    // 更新图表
+                    const filteredData = filterDataByTimeRange(stockData.value, range);
+                    const filteredHsiData = filterDataByTimeRange(hsiData.value, range);
+
+                    const stockChart = echarts.init(document.getElementById('stockChart'));
+                    stockChart.setOption({
+                        xAxis: {
+                            data: filteredData.map(item => item.date),
+                            axisLabel: {
+                                interval: Math.floor(filteredData.length / 8),
+                                formatter: function (value) {
+                                    return value.substring(5);
+                                }
+                            }
+                        },
+                        series: [{
+                            data: filteredData.map(item => item.price)
+                        }]
+                    });
+                    const volumeChart = echarts.init(document.getElementById('volumeChart'));
+                    volumeChart.setOption({
+                        xAxis: {
+                            data: filteredData.map(item => item.date),
+                            axisLabel: {
+                                interval: Math.floor(filteredData.length / 6),
+                                formatter: function (value) {
+                                    return value.substring(5);
+                                }
+                            }
+                        },
+                        series: [{
+                            data: filteredData.map(item => item.volume)
+                        }]
+                    });
+
+                    const compareChart = echarts.init(document.getElementById('compareChart'));
+                    compareChart.setOption({
+                        xAxis: {
+                            data: filteredData.map(item => item.date),
+                            axisLabel: {
+                                interval: Math.floor(filteredData.length / 6),
+                                formatter: function (value) {
+                                    return value.substring(5);
+                                }
+                            }
+                        },
+                        series: [
+                            {
+                                data: filteredData.map(item => item.price)
+                            },
+                            {
+                                data: filteredHsiData.map(item => item.price)
+                            }
+                        ]
+                    });
+                };
+
+                onMounted(() => {
+                    // 初始化所有图表
+                    initCharts();
+
+                    // 初始化 Bootstrap 的标签页
+                    const triggerTabList = [].slice.call(document.querySelectorAll('#pills-tab button'));
+                    triggerTabList.forEach(function (triggerEl) {
+                        const tabTrigger = new bootstrap.Tab(triggerEl);
+                        triggerEl.addEventListener('click', function (event) {
+                            event.preventDefault();
+                            tabTrigger.show();
+                        });
+                    });
+                });
+
+                return {
+                    currentDate,
+                    companyDescription,
+                    currentPrice,
+                    priceChange,
+                    priceChangePercentage,
+                    marketCap,
+                    volume,
+                    newsItems,
+                    financialMetrics,
+                    timeRange,
+                    changeChartTimeRange
+                };
+            }
+        });
+
+        app.mount('#app');
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,207 @@
+{
+  "user_behavior": {
+    "viewing_patterns": {
+      "peak_viewing_times": {
+        "weekdays": {
+          "morning": 0.08,
+          "afternoon": 0.12,
+          "evening": 0.45,
+          "night": 0.35
+        },
+        "weekends": {
+          "morning": 0.15,
+          "afternoon": 0.25,
+          "evening": 0.35,
+          "night": 0.25
+        }
+      },
+      "binge_watching": {
+        "percentage_of_users": 0.65,
+        "average_episodes_per_session": 3.8,
+        "preferred_genres": ["悬疑犯罪", "都市情感", "古装剧"]
+      },
+      "content_completion_rates": {
+        "feature_length_dramas": 0.72,
+        "short_dramas": 0.85,
+        "by_genre": {
+          "悬疑犯罪": 0.85,
+          "科幻": 0.78,
+          "古装剧": 0.75,
+          "都市情感": 0.68,
+          "职场剧": 0.70,
+          "青春校园": 0.65,
+          "主旋律": 0.60
+        }
+      },
+      "multi_platform_behavior": {
+        "users_with_multiple_platforms": 0.75,
+        "average_platforms_per_user": 2.8,
+        "platform_switching_frequency": "每周3.5次"
+      }
+    },
+    "engagement_metrics": {
+      "interaction_rates": {
+        "comments_per_episode": {
+          "feature_length": 12500,
+          "short_drama": 8500
+        },
+        "shares_per_episode": {
+          "feature_length": 5800,
+          "short_drama": 7200
+        },
+        "likes_per_episode": {
+          "feature_length": 45000,
+          "short_drama": 65000
+        }
+      },
+      "community_participation": {
+        "discussion_forum_activity": {
+          "active_users_percentage": 0.15,
+          "posts_per_drama": 8500,
+          "most_discussed_topics": ["剧情猜测", "角色发展", "演员表现", "剧情漏洞"]
+        },
+        "user_generated_content": {
+          "fan_fiction": 0.05,
+          "video_edits": 0.08,
+          "memes_and_screenshots": 0.22,
+          "reviews_and_analysis": 0.12
+        },
+        "influencer_impact": {
+          "professional_critics_influence": 0.35,
+          "social_media_influencers": 0.45,
+          "fan_community_leaders": 0.20
+        }
+      },
+      "content_discovery": {
+        "recommendation_engine_effectiveness": 0.65,
+        "social_recommendations": 0.25,
+        "advertising_impact": 0.10,
+        "search_behavior": {
+          "genre_based": 0.30,
+          "actor_based": 0.25,
+          "director_based": 0.15,
+          "topic_based": 0.20,
+          "recommendation_based": 0.10
+        }
+      }
+    },
+    "demographic_insights": {
+      "age_distribution": {
+        "18-24": {
+          "percentage": 0.28,
+          "preferred_platforms": ["哔哩哔哩", "抖音短剧", "腾讯视频"],
+          "preferred_genres": ["青春校园", "都市奇幻", "科幻"],
+          "viewing_behavior": "碎片化观看，高互动率"
+        },
+        "25-34": {
+          "percentage": 0.35,
+          "preferred_platforms": ["爱奇艺", "腾讯视频", "优酷"],
+          "preferred_genres": ["悬疑犯罪", "都市情感", "职场剧"],
+          "viewing_behavior": "晚间集中观看，中等互动率"
+        },
+        "35-44": {
+          "percentage": 0.22,
+          "preferred_platforms": ["爱奇艺", "优酷", "芒果TV"],
+          "preferred_genres": ["都市情感", "家庭剧", "历史正剧"],
+          "viewing_behavior": "规律性观看，低互动率"
+        },
+        "45+": {
+          "percentage": 0.15,
+          "preferred_platforms": ["CCTV", "优酷", "芒果TV"],
+          "preferred_genres": ["主旋律", "历史正剧", "家庭剧"],
+          "viewing_behavior": "传统观看习惯，极低互动率"
+        }
+      },
+      "gender_distribution": {
+        "female": {
+          "percentage": 0.58,
+          "preferred_genres": ["都市情感", "古装言情", "家庭剧"],
+          "engagement_level": "高互动，高社交分享"
+        },
+        "male": {
+          "percentage": 0.42,
+          "preferred_genres": ["悬疑犯罪", "科幻", "历史正剧"],
+          "engagement_level": "中等互动，低社交分享"
+        }
+      },
+      "geographic_distribution": {
+        "一线城市": {
+          "percentage": 0.35,
+          "preferred_content": "高品质原创内容，国际化题材",
+          "payment_willingness": "高"
+        },
+        "二线城市": {
+          "percentage": 0.40,
+          "preferred_content": "多元化内容，本土化题材",
+          "payment_willingness": "中"
+        },
+        "三四线城市": {
+          "percentage": 0.25,
+          "preferred_content": "主流热门内容，轻松娱乐题材",
+          "payment_willingness": "低"
+        }
+      }
+    },
+    "payment_behavior": {
+      "subscription_models": {
+        "monthly_subscribers": 0.45,
+        "annual_subscribers": 0.25,
+        "pay-per-view_users": 0.15,
+        "free_tier_only": 0.15
+      },
+      "price_sensitivity": {
+        "high_sensitivity": 0.35,
+        "medium_sensitivity": 0.45,
+        "low_sensitivity": 0.20
+      },
+      "content_valuation": {
+        "willing_to_pay_premium_for": ["独家内容", "提前观看", "无广告体验", "高清画质"],
+        "not_willing_to_pay_for": ["用户生成内容", "老旧内容", "短内容", "非独家内容"]
+      },
+      "churn_factors": {
+        "content_quality_issues": 0.35,
+        "price_increases": 0.25,
+        "content_availability": 0.20,
+        "technical_issues": 0.15,
+        "competitor_offers": 0.05
+      }
+    },
+    "emerging_trends": [
+      {
+        "trend": "短剧崛起",
+        "description": "15-20分钟短剧内容快速增长，尤其在年轻用户中",
+        "adoption_rate": 0.38,
+        "growth_rate": "年增长85%",
+        "user_segments": ["18-24岁", "通勤族", "碎片化时间用户"]
+      },
+      {
+        "trend": "互动式内容",
+        "description": "允许用户参与情节选择的互动剧集",
+        "adoption_rate": 0.15,
+        "growth_rate": "年增长120%",
+        "user_segments": ["18-30岁", "游戏爱好者", "新体验追求者"]
+      },
+      {
+        "trend": "垂直内容社区",
+        "description": "围绕特定剧集或类型形成的深度用户社区",
+        "adoption_rate": 0.22,
+        "growth_rate": "年增长60%",
+        "user_segments": ["核心粉丝", "内容创作者", "社交型观众"]
+      },
+      {
+        "trend": "跨平台内容体验",
+        "description": "同一IP在不同平台提供差异化但互补的内容体验",
+        "adoption_rate": 0.18,
+        "growth_rate": "年增长45%",
+        "user_segments": ["多平台用户", "IP粉丝", "内容探索者"]
+      },
+      {
+        "trend": "沉浸式观影体验",
+        "description": "通过AR/VR技术增强的观影体验",
+        "adoption_rate": 0.08,
+        "growth_rate": "年增长150%",
+        "user_segments": ["技术早期采用者", "高端用户", "体验追求者"]
+      }
+    ]
+  }
+}

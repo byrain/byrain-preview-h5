@@ -1,0 +1,298 @@
+{
+  "censorship_data": {
+    "overall_statistics": {
+      "total_dramas_analyzed": 120,
+      "average_approval_time": 58,
+      "average_modifications_required": 4.2,
+      "overall_approval_rate": 0.88
+    },
+    "genre_correlation": {
+      "主旋律": {
+        "approval_rate": 0.98,
+        "average_approval_time": 25,
+        "average_modifications": 1.2,
+        "market_returns": {
+          "average_rating": 7.3,
+          "average_discussion": 180000,
+          "average_play_count": 520000000,
+          "roi": 1.8
+        },
+        "risk_factors": {
+          "production_cost_risk": "低",
+          "censorship_risk": "极低",
+          "audience_reception_risk": "中",
+          "commercial_success_risk": "中"
+        }
+      },
+      "历史正剧": {
+        "approval_rate": 0.95,
+        "average_approval_time": 40,
+        "average_modifications": 2.5,
+        "market_returns": {
+          "average_rating": 8.2,
+          "average_discussion": 420000,
+          "average_play_count": 680000000,
+          "roi": 2.2
+        },
+        "risk_factors": {
+          "production_cost_risk": "高",
+          "censorship_risk": "低",
+          "audience_reception_risk": "中",
+          "commercial_success_risk": "中低"
+        }
+      },
+      "古装剧": {
+        "approval_rate": 0.85,
+        "average_approval_time": 65,
+        "average_modifications": 4.0,
+        "market_returns": {
+          "average_rating": 8.0,
+          "average_discussion": 580000,
+          "average_play_count": 780000000,
+          "roi": 2.5
+        },
+        "risk_factors": {
+          "production_cost_risk": "高",
+          "censorship_risk": "中",
+          "audience_reception_risk": "中低",
+          "commercial_success_risk": "中低"
+        }
+      },
+      "都市情感": {
+        "approval_rate": 0.88,
+        "average_approval_time": 60,
+        "average_modifications": 4.5,
+        "market_returns": {
+          "average_rating": 7.5,
+          "average_discussion": 380000,
+          "average_play_count": 650000000,
+          "roi": 2.8
+        },
+        "risk_factors": {
+          "production_cost_risk": "中",
+          "censorship_risk": "中",
+          "audience_reception_risk": "低",
+          "commercial_success_risk": "低"
+        }
+      },
+      "职场剧": {
+        "approval_rate": 0.90,
+        "average_approval_time": 50,
+        "average_modifications": 4.0,
+        "market_returns": {
+          "average_rating": 7.6,
+          "average_discussion": 320000,
+          "average_play_count": 650000000,
+          "roi": 3.0
+        },
+        "risk_factors": {
+          "production_cost_risk": "中",
+          "censorship_risk": "中",
+          "audience_reception_risk": "低",
+          "commercial_success_risk": "低"
+        }
+      },
+      "悬疑犯罪": {
+        "approval_rate": 0.82,
+        "average_approval_time": 85,
+        "average_modifications": 7.5,
+        "market_returns": {
+          "average_rating": 8.8,
+          "average_discussion": 820000,
+          "average_play_count": 880000000,
+          "roi": 3.5
+        },
+        "risk_factors": {
+          "production_cost_risk": "中高",
+          "censorship_risk": "高",
+          "audience_reception_risk": "低",
+          "commercial_success_risk": "低"
+        }
+      },
+      "科幻": {
+        "approval_rate": 0.75,
+        "average_approval_time": 120,
+        "average_modifications": 10.0,
+        "market_returns": {
+          "average_rating": 8.7,
+          "average_discussion": 950000,
+          "average_play_count": 1200000000,
+          "roi": 2.8
+        },
+        "risk_factors": {
+          "production_cost_risk": "极高",
+          "censorship_risk": "高",
+          "audience_reception_risk": "中高",
+          "commercial_success_risk": "中高"
+        }
+      },
+      "青春校园": {
+        "approval_rate": 0.85,
+        "average_approval_time": 65,
+        "average_modifications": 6.5,
+        "market_returns": {
+          "average_rating": 7.4,
+          "average_discussion": 280000,
+          "average_play_count": 550000000,
+          "roi": 3.2
+        },
+        "risk_factors": {
+          "production_cost_risk": "中低",
+          "censorship_risk": "中",
+          "audience_reception_risk": "低",
+          "commercial_success_risk": "低"
+        }
+      },
+      "都市奇幻": {
+        "approval_rate": 0.78,
+        "average_approval_time": 45,
+        "average_modifications": 7.0,
+        "market_returns": {
+          "average_rating": 6.6,
+          "average_discussion": 330000,
+          "average_play_count": 400000000,
+          "roi": 2.5
+        },
+        "risk_factors": {
+          "production_cost_risk": "中高",
+          "censorship_risk": "高",
+          "audience_reception_risk": "中高",
+          "commercial_success_risk": "中"
+        }
+      },
+      "家庭剧": {
+        "approval_rate": 0.92,
+        "average_approval_time": 55,
+        "average_modifications": 3.0,
+        "market_returns": {
+          "average_rating": 7.9,
+          "average_discussion": 350000,
+          "average_play_count": 620000000,
+          "roi": 2.8
+        },
+        "risk_factors": {
+          "production_cost_risk": "中",
+          "censorship_risk": "低",
+          "audience_reception_risk": "低",
+          "commercial_success_risk": "低"
+        }
+      }
+    },
+    "sensitive_content_analysis": {
+      "political_themes": {
+        "approval_rate": 0.70,
+        "average_modifications": 12.5,
+        "common_issues": ["历史解读偏差", "政治敏感话题", "社会问题描述"]
+      },
+      "violence_content": {
+        "approval_rate": 0.75,
+        "average_modifications": 8.0,
+        "common_issues": ["暴力场景过度", "犯罪细节描述", "负面社会影响"]
+      },
+      "romantic_content": {
+        "approval_rate": 0.85,
+        "average_modifications": 5.5,
+        "common_issues": ["亲密场景过度", "婚姻价值观", "青少年不适宜内容"]
+      },
+      "social_issues": {
+        "approval_rate": 0.80,
+        "average_modifications": 6.0,
+        "common_issues": ["社会问题描述失衡", "负面情绪过度", "解决方案不当"]
+      }
+    },
+    "mainstream_themes_analysis": {
+      "positive_energy_content": {
+        "approval_rate": 0.95,
+        "market_returns": {
+          "average_rating": 7.5,
+          "average_discussion": 280000,
+          "average_play_count": 550000000,
+          "roi": 2.5
+        },
+        "audience_demographics": {
+          "18-24": 0.20,
+          "25-34": 0.25,
+          "35-44": 0.30,
+          "45+": 0.25
+        }
+      },
+      "traditional_values_promotion": {
+        "approval_rate": 0.92,
+        "market_returns": {
+          "average_rating": 7.8,
+          "average_discussion": 320000,
+          "average_play_count": 620000000,
+          "roi": 2.7
+        },
+        "audience_demographics": {
+          "18-24": 0.15,
+          "25-34": 0.25,
+          "35-44": 0.30,
+          "45+": 0.30
+        }
+      },
+      "national_pride_themes": {
+        "approval_rate": 0.98,
+        "market_returns": {
+          "average_rating": 7.6,
+          "average_discussion": 350000,
+          "average_play_count": 580000000,
+          "roi": 2.2
+        },
+        "audience_demographics": {
+          "18-24": 0.15,
+          "25-34": 0.20,
+          "35-44": 0.30,
+          "45+": 0.35
+        }
+      },
+      "historical_achievements": {
+        "approval_rate": 0.96,
+        "market_returns": {
+          "average_rating": 8.0,
+          "average_discussion": 420000,
+          "average_play_count": 650000000,
+          "roi": 2.0
+        },
+        "audience_demographics": {
+          "18-24": 0.20,
+          "25-34": 0.25,
+          "35-44": 0.25,
+          "45+": 0.30
+        }
+      }
+    },
+    "policy_compliance_risks": [
+      {
+        "risk_area": "历史解读",
+        "description": "历史题材作品需确保符合官方历史观点，避免争议性解读",
+        "impact_level": "高",
+        "mitigation_strategies": ["前期咨询历史专家", "提前与审查部门沟通", "避免敏感历史时期"]
+      },
+      {
+        "risk_area": "社会问题描述",
+        "description": "社会问题需平衡展示，避免过度负面或单一视角",
+        "impact_level": "中高",
+        "mitigation_strategies": ["提供多角度视角", "展示问题解决过程", "强调积极结果"]
+      },
+      {
+        "risk_area": "价值观导向",
+        "description": "作品需传递正能量和主流价值观",
+        "impact_level": "中",
+        "mitigation_strategies": ["明确正面角色形象", "设置积极结局", "体现社会主义核心价值观"]
+      },
+      {
+        "risk_area": "内容健康程度",
+        "description": "避免过度暴力、低俗或消极内容",
+        "impact_level": "中高",
+        "mitigation_strategies": ["控制暴力场景尺度", "注意服装和对话适宜性", "避免过度展示奢侈生活"]
+      },
+      {
+        "risk_area": "青少年保护",
+        "description": "确保内容适合青少年观看或有明确分级",
+        "impact_level": "中",
+        "mitigation_strategies": ["设置内容分级", "避免不良行为正面展示", "增加教育意义"]
+      }
+    ]
+  }
+}

@@ -10,6 +10,8 @@
       <li><a href="/snake.html"> AI 生成的小游戏 贪吃蛇 </a></li>
       <li><a href="/workplace-seating-query-system.html">工位查询</a></li>
       <li><a href="/frontend-implementation.html">工位查询(带仿真)</a></li>
+      <li><a href="/drama_index.html">AI Agent 内容</a></li>
+      <li><a href="/test_duiba.html">iframe 测试</a></li>
     </nav>
 
     <!-- 按钮，点击触发方法 -->

@@ -1,0 +1,234 @@
+{
+  "short_dramas": [
+    {
+      "id": 101,
+      "title": "都市情感生活录",
+      "platform": "抖音短剧",
+      "genre": "都市情感",
+      "release_date": "2024-01-10",
+      "episodes": 12,
+      "episode_length": "15-20分钟",
+      "douban_rating": 7.2,
+      "discussion_count": 320000,
+      "top10_days": 40,
+      "play_count": 380000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": false,
+        "details": "使用AI快速生成多版本剧本，根据用户反馈进行优化"
+      },
+      "censorship": {
+        "approval_time": 25,
+        "modifications_required": 3,
+        "final_approval": true
+      }
+    },
+    {
+      "id": 102,
+      "title": "爱情三十六计",
+      "platform": "抖音短剧",
+      "genre": "爱情喜剧",
+      "release_date": "2024-02-15",
+      "episodes": 18,
+      "episode_length": "10-15分钟",
+      "douban_rating": 6.8,
+      "discussion_count": 280000,
+      "top10_days": 35,
+      "play_count": 350000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": true,
+        "details": "AI辅助剧情设计和喜剧元素构建，特效增强"
+      },
+      "censorship": {
+        "approval_time": 20,
+        "modifications_required": 4,
+        "final_approval": true
+      }
+    },
+    {
+      "id": 103,
+      "title": "职场进化论",
+      "platform": "抖音短剧",
+      "genre": "职场",
+      "release_date": "2024-03-05",
+      "episodes": 15,
+      "episode_length": "15-18分钟",
+      "douban_rating": 7.5,
+      "discussion_count": 350000,
+      "top10_days": 42,
+      "play_count": 420000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": true,
+        "details": "使用AI分析热门职场话题和用户评论，优化剧情发展"
+      },
+      "censorship": {
+        "approval_time": 30,
+        "modifications_required": 2,
+        "final_approval": true
+      }
+    },
+    {
+      "id": 104,
+      "title": "青春不打烊",
+      "platform": "抖音短剧",
+      "genre": "青春校园",
+      "release_date": "2024-04-20",
+      "episodes": 20,
+      "episode_length": "12-15分钟",
+      "douban_rating": 6.9,
+      "discussion_count": 260000,
+      "top10_days": 32,
+      "play_count": 320000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": true,
+        "details": "AI辅助角色对话生成和情感分析，特效增强"
+      },
+      "censorship": {
+        "approval_time": 25,
+        "modifications_required": 5,
+        "final_approval": true
+      }
+    },
+    {
+      "id": 105,
+      "title": "谜案追踪",
+      "platform": "抖音短剧",
+      "genre": "悬疑推理",
+      "release_date": "2024-05-15",
+      "episodes": 10,
+      "episode_length": "18-20分钟",
+      "douban_rating": 8.0,
+      "discussion_count": 420000,
+      "top10_days": 45,
+      "play_count": 480000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": true,
+        "details": "使用AI构建悬疑剧情和线索设计，后期特效增强"
+      },
+      "censorship": {
+        "approval_time": 35,
+        "modifications_required": 4,
+        "final_approval": true
+      }
+    },
+    {
+      "id": 106,
+      "title": "重生之我是富二代",
+      "platform": "抖音短剧",
+      "genre": "都市奇幻",
+      "release_date": "2024-06-10",
+      "episodes": 24,
+      "episode_length": "15-18分钟",
+      "douban_rating": 6.7,
+      "discussion_count": 380000,
+      "top10_days": 38,
+      "play_count": 450000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": true,
+        "details": "AI辅助剧情设计和情节转折，特效增强"
+      },
+      "censorship": {
+        "approval_time": 40,
+        "modifications_required": 6,
+        "final_approval": true
+      }
+    },
+    {
+      "id": 107,
+      "title": "异能少年",
+      "platform": "抖音短剧",
+      "genre": "科幻",
+      "release_date": "2024-07-05",
+      "episodes": 15,
+      "episode_length": "15-20分钟",
+      "douban_rating": 7.3,
+      "discussion_count": 310000,
+      "top10_days": 36,
+      "play_count": 380000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": true,
+        "details": "大规模使用AI进行剧本创作和特效生成"
+      },
+      "censorship": {
+        "approval_time": 45,
+        "modifications_required": 5,
+        "final_approval": true
+      }
+    },
+    {
+      "id": 108,
+      "title": "古镇奇谭",
+      "platform": "抖音短剧",
+      "genre": "悬疑古风",
+      "release_date": "2024-08-15",
+      "episodes": 12,
+      "episode_length": "15-18分钟",
+      "douban_rating": 7.8,
+      "discussion_count": 360000,
+      "top10_days": 40,
+      "play_count": 420000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": true,
+        "details": "使用AI进行古风场景设计和特效生成"
+      },
+      "censorship": {
+        "approval_time": 30,
+        "modifications_required": 3,
+        "final_approval": true
+      }
+    },
+    {
+      "id": 109,
+      "title": "都市修仙传",
+      "platform": "抖音短剧",
+      "genre": "都市奇幻",
+      "release_date": "2024-09-10",
+      "episodes": 20,
+      "episode_length": "15-20分钟",
+      "douban_rating": 6.5,
+      "discussion_count": 280000,
+      "top10_days": 32,
+      "play_count": 350000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": true,
+        "details": "AI辅助奇幻元素设计和特效生成"
+      },
+      "censorship": {
+        "approval_time": 50,
+        "modifications_required": 8,
+        "final_approval": true
+      }
+    },
+    {
+      "id": 110,
+      "title": "创业时代",
+      "platform": "抖音短剧",
+      "genre": "商战",
+      "release_date": "2024-10-05",
+      "episodes": 15,
+      "episode_length": "15-18分钟",
+      "douban_rating": 7.4,
+      "discussion_count": 320000,
+      "top10_days": 35,
+      "play_count": 380000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": false,
+        "details": "使用AI分析商业案例和创业故事，辅助剧本创作"
+      },
+      "censorship": {
+        "approval_time": 35,
+        "modifications_required": 4,
+        "final_approval": true
+      }
+    }
+  ]
+}

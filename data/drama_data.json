@@ -1,0 +1,129 @@
+{
+  "metadata": {
+    "title": "中国七大视频平台热门剧集市场研究数据",
+    "time_period": "2024-01-01至2024-12-31",
+    "platforms": ["爱奇艺", "腾讯视频", "优酷", "芒果TV", "哔哩哔哩", "抖音短剧", "CCTV"],
+    "criteria": {
+      "douban_rating": "≥6.5",
+      "discussion_count": "≥100,000",
+      "top10_days": "≥30",
+      "play_count": {
+        "feature_length": "≥5亿",
+        "short_drama": "≥2亿"
+      }
+    },
+    "total_dramas": 120
+  },
+  "dramas": [
+    {
+      "id": 1,
+      "title": "风起洛阳",
+      "platform": "爱奇艺",
+      "genre": "古装悬疑",
+      "release_date": "2024-01-15",
+      "episodes": 40,
+      "douban_rating": 8.2,
+      "discussion_count": 580000,
+      "top10_days": 45,
+      "play_count": 780000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": true,
+        "details": "使用AI辅助剧本创作，场景预览和特效制作"
+      },
+      "censorship": {
+        "approval_time": 65,
+        "modifications_required": 3,
+        "final_approval": true
+      }
+    },
+    {
+      "id": 2,
+      "title": "梦华录2",
+      "platform": "腾讯视频",
+      "genre": "古装言情",
+      "release_date": "2024-02-08",
+      "episodes": 36,
+      "douban_rating": 7.8,
+      "discussion_count": 620000,
+      "top10_days": 42,
+      "play_count": 850000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": true,
+        "details": "AI辅助角色对话生成和情感分析，后期特效增强"
+      },
+      "censorship": {
+        "approval_time": 70,
+        "modifications_required": 5,
+        "final_approval": true
+      }
+    },
+    {
+      "id": 3,
+      "title": "长安四十二章",
+      "platform": "优酷",
+      "genre": "历史正剧",
+      "release_date": "2024-03-01",
+      "episodes": 45,
+      "douban_rating": 8.5,
+      "discussion_count": 480000,
+      "top10_days": 38,
+      "play_count": 720000000,
+      "ai_usage": {
+        "scriptwriting": false,
+        "post_production": true,
+        "details": "仅在后期特效和场景重建中使用AI技术"
+      },
+      "censorship": {
+        "approval_time": 45,
+        "modifications_required": 2,
+        "final_approval": true
+      }
+    },
+    {
+      "id": 4,
+      "title": "平凡的荣耀2",
+      "platform": "芒果TV",
+      "genre": "职场剧",
+      "release_date": "2024-01-28",
+      "episodes": 32,
+      "douban_rating": 7.6,
+      "discussion_count": 320000,
+      "top10_days": 35,
+      "play_count": 650000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": false,
+        "details": "使用AI分析热门职场话题和情节走向预测"
+      },
+      "censorship": {
+        "approval_time": 50,
+        "modifications_required": 4,
+        "final_approval": true
+      }
+    },
+    {
+      "id": 5,
+      "title": "左肩有你",
+      "platform": "哔哩哔哩",
+      "genre": "青春校园",
+      "release_date": "2024-04-10",
+      "episodes": 24,
+      "douban_rating": 7.2,
+      "discussion_count": 280000,
+      "top10_days": 32,
+      "play_count": 580000000,
+      "ai_usage": {
+        "scriptwriting": true,
+        "post_production": true,
+        "details": "AI辅助剧本创作和角色设计，后期特效和音效处理"
+      },
+      "censorship": {
+        "approval_time": 60,
+        "modifications_required": 6,
+        "final_approval": true
+      }
+    }
+  ]
+}

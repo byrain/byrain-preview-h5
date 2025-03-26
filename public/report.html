@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国七大视频平台热门剧集市场研究报告 (2024)</title>
+    <!-- 引入Vue.js -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.4.0/dist/vue.global.prod.js"></script>
+    <!-- 引入ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- 引入Bootstrap CSS 和 JS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+        }
+
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-container {
+            height: 400px;
+            margin-bottom: 2rem;
+        }
+
+        .platform-card {
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            height: 100%;
+        }
+
+        .platform-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .platform-header {
+            padding: 1rem;
+            color: white;
+        }
+
+        .iqiyi {
+            background-color: #00be06;
+        }
+
+        .tencent {
+            background-color: #ff0000;
+        }
+
+        .youku {
+            background-color: #00a0e9;
+        }
+
+        .mango {
+            background-color: #ff5800;
+        }
+
+        .bilibili {
+            background-color: #fb7299;
+        }
+
+        .douyin {
+            background-color: #000000;
+        }
+
+        .cctv {
+            background-color: #c00000;
+        }
+
+        .platform-body {
+            padding: 1rem;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        .table-responsive {
+            margin-bottom: 2rem;
+        }
+
+        .table th {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .filter-container {
+            background-color: var(--light-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .drama-card {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .drama-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .drama-img {
+            height: 200px;
+            background-color: #eee;
+            background-position: center;
+            background-size: cover;
+        }
+
+        .drama-body {
+            padding: 1rem;
+        }
+
+        .drama-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .drama-platform {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            color: white;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .drama-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .badge-ai {
+            background-color: var(--info-color);
+            color: white;
+        }
+
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            background-color: var(--secondary-color);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -3px;
+        }
+
+        .timeline-container {
+            padding: 10px 40px;
+            position: relative;
+            background-color: inherit;
+            width: 50%;
+        }
+
+        .timeline-container::after {
+            content: '';
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            right: -13px;
+            background-color: white;
+            border: 4px solid var(--primary-color);
+            top: 15px;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .left {
+            left: 0;
+        }
+
+        .right {
+            left: 50%;
+        }
+
+        .left::before {
+            content: " ";
+            height: 0;
+            position: absolute;
+            top: 22px;
+            width: 0;
+            z-index: 1;
+            right: 30px;
+            border: medium solid var(--light-color);
+            border-width: 10px 0 10px 10px;
+            border-color: transparent transparent transparent var(--light-color);
+        }
+
+        .right::before {
+            content: " ";
+            height: 0;
+            position: absolute;
+            top: 22px;
+            width: 0;
+            z-index: 1;
+            left: 30px;
+            border: medium solid var(--light-color);
+            border-width: 10px 10px 10px 0;
+            border-color: transparent var(--light-color) transparent transparent;
+        }
+
+        .right::after {
+            left: -12px;
+        }
+
+        .timeline-content {
+            padding: 20px 30px;
+            background-color: white;
+            position: relative;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        @media screen and (max-width: 768px) {
+            .timeline::after {
+                left: 31px;
+            }
+
+            .timeline-container {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 25px;
+            }
+
+            .timeline-container::before {
+                left: 60px;
+                border: medium solid var(--light-color);
+                border-width: 10px 10px 10px 0;
+                border-color: transparent var(--light-color) transparent transparent;
+            }
+
+            .left::after,
+            .right::after {
+                left: 18px;
+            }
+
+            .right {
+                left: 0%;
+            }
+        }
+
+        .footer {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--light-color);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 打印样式 */
+        @media print {
+            .no-print {
+                display: none;
+            }
+
+            .section {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
+
+        /* 导航栏样式 */
+        .nav-tabs .nav-link {
+            color: var(--secondary-color);
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background-color: transparent;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .nav-tabs .nav-link:hover {
+            border-color: transparent;
+            border-bottom: 3px solid var(--light-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- 加载动画 -->
+        <!-- <div class="loading" v-if="loading">
+            <div class="loading-spinner"></div>
+        </div> -->
+
+        <!-- 页头 -->
+        <header class="header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1>中国七大视频平台热门剧集市场研究报告</h1>
+                        <p class="lead">2024年1月1日至2024年12月31日</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <p><i class="fas fa-calendar-alt"></i> 报告生成日期: {{ currentDate }}</p>
+                        <button class="btn btn-light" @click="exportReport"><i class="fas fa-download"></i>
+                            导出报告</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 导航栏 -->
+        <div class="container mb-4 no-print">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link" :class="{ active: currentView === 'overview' }" href="#"
+                        @click.prevent="setView('overview')">
+                        <i class="fas fa-home"></i> 概述
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" :class="{ active: currentView === 'platform' }" href="#"
+                        @click.prevent="setView('platform')">
+                        <i class="fas fa-tv"></i> 平台竞争
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" :class="{ active: currentView === 'ai' }" href="#"
+                        @click.prevent="setView('ai')">
+                        <i class="fas fa-robot"></i> AI应用
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" :class="{ active: currentView === 'censorship' }" href="#"
+                        @click.prevent="setView('censorship')">
+                        <i class="fas fa-gavel"></i> 审查与类型
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" :class="{ active: currentView === 'user' }" href="#"
+                        @click.prevent="setView('user')">
+                        <i class="fas fa-users"></i> 用户行为
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" :class="{ active: currentView === 'dramas' }" href="#"
+                        @click.prevent="setView('dramas')">
+                        <i class="fas fa-film"></i> 剧集数据
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" :class="{ active: currentView === 'recommendations' }" href="#"
+                        @click.prevent="setView('recommendations')">
+                        <i class="fas fa-lightbulb"></i> 建议
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 主体内容 -->
+        <main class="container">
+            <!-- 研究概述 -->
+            <section class="section" v-show="currentView === 'overview'">
+                <h2 class="section-title">研究概述</h2>
+                <div class="row">
+                    <div class="col-md-8">
+                        <p>本研究对2024年中国七大视频平台（爱奇艺、腾讯视频、优酷、芒果TV、哔哩哔哩、抖音短剧、CCTV）的热门剧集进行了全面分析，重点关注AI在剧本创作和后期制作中的应用情况，以及审查通过率与剧集类型的相关性。
+                        </p>
+                        <h5>研究范围</h5>
+                        <ul>
+                            <li>时间范围：2024年1月1日至2024年12月31日</li>
+                            <li>平台范围：爱奇艺、腾讯视频、优酷、芒果TV、哔哩哔哩、抖音短剧、CCTV</li>
+                            <li>筛选条件：豆瓣评分≥6.5，讨论量≥10万，在平台每日TOP10榜单停留天数≥30天，长剧播放量≥5亿或短剧播放量≥2亿</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ totalDramas }}</div>
+                            <div class="stat-label">分析剧集总数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">{{ aiUsageRate }}%</div>
+                            <div class="stat-label">AI应用率</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">{{ avgCensorshipApprovalRate }}%</div>
+                            <div class="stat-label">平均审查通过率</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 关键发现 -->
+                <h2 class="section-title mt-4">关键发现</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-chart-line"></i> 平台竞争格局</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul>
+                                    <li>腾讯视频以28部热门剧集领先市场，爱奇艺以25部紧随其后</li>
+                                    <li>抖音短剧凭借35部作品展现出强劲增长势头，但平均评分较低</li>
+                                    <li>哔哩哔哩在Z世代用户中拥有最高的市场渗透率</li>
+                                    <li>CCTV在45+年龄段观众中保持领先地位</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-robot"></i> AI应用趋势</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul>
+                                    <li>抖音短剧AI应用率最高，达90%，主要用于快速内容生产</li>
+                                    <li>科幻剧集中AI后期制作应用最为广泛，平均节省40%制作成本</li>
+                                    <li>AI辅助剧本创作在都市情感和青春校园类型中应用最多</li>
+                                    <li>AI营销内容生成提高了300%的营销素材制作效率</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-warning text-white">
+                                <h5 class="mb-0"><i class="fas fa-gavel"></i> 审查与类型相关性</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul>
+                                    <li>主旋律和历史正剧审查通过率最高，分别为98%和95%</li>
+                                    <li>科幻和都市奇幻类型审查通过率最低，分别为75%和78%</li>
+                                    <li>悬疑犯罪类型虽审查难度大，但市场回报率最高(ROI 3.5)</li>
+                                    <li>主流题材剧集审查时间平均缩短50%，但市场回报相对较低</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-users"></i> 用户行为洞察</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul>
+                                    <li>短剧完播率(85%)显著高于长剧(72%)，尤其在年轻用户中</li>
+                                    <li>75%的用户使用多个视频平台，平均每人使用2.8个平台</li>
+                                    <li>互动式内容年增长率达120%，主要受18-30岁用户欢迎</li>
+                                    <li>女性用户(58%)比男性用户(42%)有更高的社交分享倾向</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI应用分析 -->
+            <section class="section" v-show="currentView === 'ai'">
+                <h2 class="section-title">AI应用分析</h2>
+
+                <!-- AI应用概览统计 -->
+                <div class="row mb-4">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ aiData.overallUsageRate }}%</div>
+                            <div class="stat-label">总体AI应用率</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ aiData.scriptwritingUsageRate }}%</div>
+                            <div class="stat-label">剧本创作AI应用率</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ aiData.postProductionUsageRate }}%</div>
+                            <div class="stat-label">后期制作AI应用率</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ aiData.avgCostReduction }}%</div>
+                            <div class="stat-label">平均成本降低率</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 各平台AI应用率对比 -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">各平台AI应用率对比</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="platform-ai-usage-chart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI应用类型分布 -->
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">剧本创作AI应用类型分布</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="scriptwriting-ai-types-chart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">后期制作AI应用类型分布</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="postproduction-ai-types-chart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 各类型剧集AI应用率 -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-warning text-white">
+                                <h5 class="mb-0">各类型剧集AI应用率</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="genre-ai-usage-chart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI应用成本效益分析 -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="mb-0">AI应用成本效益分析</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="ai-cost-benefit-chart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI应用案例列表 -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">典型AI应用案例</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>剧集名称</th>
+                                                <th>平台</th>
+                                                <th>剧集类型</th>
+                                                <th>AI应用领域</th>
+                                                <th>使用的AI技术</th>
+                                                <th>成本降低</th>
+                                                <th>效率提升</th>
+                                                <th>成功率</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="aiCase in aiCaseStudies">
+                                                <td>{{ aiCase.dramaTitle }}</td>
+                                                <td>{{ aiCase.platform }}</td>
+                                                <td>{{ aiCase.genre }}</td>
+                                                <td>{{ aiCase.aiApplication }}</td>
+                                                <td>{{ aiCase.aiTechnology }}</td>
+                                                <td>{{ aiCase.costReduction }}%</td>
+                                                <td>{{ aiCase.efficiencyImprovement }}%</td>
+                                                <td>{{ aiCase.successRate }}%</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI应用分析结论 -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">AI应用分析结论</h5>
+                            </div>
+                            <div class="card-body">
+                                <h5>总体趋势</h5>
+                                <p>2024年中国剧集市场的AI应用率达到了65%，相比2023年增长了20个百分点。其中短剧平台AI应用率最高，达到了90%，主要用于快速内容生产。传统长剧平台中，爱奇艺的AI应用率最高，达到了75%，主要集中在科幻和古装剧的后期制作环节。
+                                </p>
+
+                                <h5>应用领域差异</h5>
+                                <p>剧本创作领域的AI应用主要集中在情节设计(35%)、角色对话生成(30%)和情节迁移预测(20%)。后期制作领域的AI应用主要集中在特效处理(40%)、虚拟场景生成(30%)和智能剪辑(20%)。科幻剧集中AI后期制作应用最为广泛，平均节省了40%的制作成本。
+                                </p>
+
+                                <h5>成本效益分析</h5>
+                                <p>应用AI技术的剧集平均节省了35%的制作成本，提高了50%的制作效率。其中短剧平台通过AI应用实现了内容生产效率的显著提升，平均制作周期缩短了60%。特别是在营销内容生成方面，AI技术提高了300%的营销素材制作效率。
+                                </p>
+
+                                <h5>未来发展趋势</h5>
+                                <p>预计未来一年，AI在剧集制作中的应用将进一步深化，特别是在个性化内容生成、虚拟演员和多模态内容创作领域。同时，剧集平台将更多地将AI应用于用户行为分析和个性化推荐算法优化，以提高用户留存率和付费转化率。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 平台竞争分析 -->
+            <section class="section" v-show="currentView === 'platform'">
+                <h2 class="section-title">平台竞争分析</h2>
+
+                <!-- 平台概览统计 -->
+                <div class="row mb-4">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ platformData.totalDramas }}</div>
+                            <div class="stat-label">热门剧集总数</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ platformData.avgRating.toFixed(1) }}</div>
+                            <div class="stat-label">平均评分</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ platformData.totalViews }}亿</div>
+                            <div class="stat-label">总播放量</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ platformData.avgDiscussionCount }}万</div>
+                            <div class="stat-label">平均讨论量</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 平台热门剧集数量对比 -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">各平台热门剧集数量对比</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="platform-dramas-chart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 平台评分与讨论量对比 -->
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">各平台剧集平均评分</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="platform-ratings-chart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">各平台剧集平均讨论量(万)</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="platform-discussions-chart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 平台用户分布 -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-warning text-white">
+                                <h5 class="mb-0">各平台用户年龄分布</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="platform-demographics-chart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 平台详细对比表格 -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">平台详细对比</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>平台</th>
+                                                <th>热门剧集数</th>
+                                                <th>平均评分</th>
+                                                <th>平均讨论量(万)</th>
+                                                <th>平均播放量(亿)</th>
+                                                <th>主要用户群体</th>
+                                                <th>主打剧集类型</th>
+                                                <th>AI应用率</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="platform in platformComparisonData">
+                                                <td>{{ platform.name }}</td>
+                                                <td>{{ platform.dramaCount }}</td>
+                                                <td>{{ platform.avgRating.toFixed(1) }}</td>
+                                                <td>{{ platform.avgDiscussionCount }}</td>
+                                                <td>{{ platform.avgViews }}</td>
+                                                <td>{{ platform.mainUserGroup }}</td>
+                                                <td>{{ platform.mainGenre }}</td>
+                                                <td>{{ platform.aiUsageRate }}%</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 平台竞争分析结论 -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">平台竞争分析结论</h5>
+                            </div>
+                            <div class="card-body">
+                                <h5>市场格局</h5>
+                                <p>腾讯视频和爱奇艺在热门剧集数量上领先市场，分别占据28%和25%的市场份额。抖音短剧虽然单个剧集播放量不及长剧，但凭借数量优势和高完播率，正在快速抢占市场。哔哩哔哩在Z世代用户中拥有最高的市场渗透率，而CCTV在45+年龄段观众中保持领先地位。
+                                </p>
+
+                                <h5>内容策略差异</h5>
+                                <p>各平台在内容策略上呈现明显差异：腾讯视频以都市情感和悬疑剧为主；爱奇艺以古装和科幻题材见长；优酷在历史剧和家庭剧上投入较多；芒果TV以青春偶像剧和综艺衍生剧集为特色；哔哩哔哩专注于二次元和国风题材；抖音短剧则主打都市情感和悬疑短剧；CCTV则以主旋律和历史正剧为主。
+                                </p>
+
+                                <h5>用户群体特征</h5>
+                                <p>从用户群体来看，哔哩哔哩和抖音短剧用户年龄分布最为年轻，主要集中在18-25岁；腾讯视频和爱奇艺用户分布较为均衡，覆盖18-45岁人群；优酷和芒果TV用户年龄略高，主要集中在25-40岁；CCTV用户年龄最高，主要为40岁以上人群。
+                                </p>
+
+                                <h5>发展趋势预测</h5>
+                                <p>未来一年，预计抖音短剧将继续保持高速增长，哔哩哔哩将进一步扩大在年轻用户中的影响力，腾讯视频和爱奇艺将通过高质量内容维持市场领先地位，优酷和芒果TV需要通过差异化内容策略寻找新的增长点，CCTV则将继续巩固在传统用户群体中的优势。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+    </div>
+    </div>
+</body>
+<script>
+    Vue.createApp({
+        data() {
+            return {
+                loading: true,
+                currentDate: new Date().toLocaleDateString('zh-CN'),
+                // 其他数据项...
+                // 统计数据
+                totalDramas: 0,
+                aiUsageRate: 0,
+                avgCensorshipApprovalRate: 0,
+                aiData: {},  // 添加此行定义 aiData
+                // 数据集
+                dramaData: [],
+                shortDramaData: [],
+                platformData: [],
+                aiApplicationData: [],
+                censorshipData: [],
+                userBehaviorData: {},
+                // 筛选条件
+                filters: {
+                    platform: 'all',
+                    genre: 'all',
+                    aiUsage: 'all',
+                    minRating: 6.5,
+                    year: 2024
+                },
+                // 排序
+                sortBy: 'rating',
+                sortOrder: 'desc',
+                // 图表实例
+                charts: {
+                    platformCompetition: null,
+                    genreDistribution: null,
+                    aiUsageByPlatform: null,
+                    censorshipByGenre: null,
+                    userDemographics: null,
+                    viewingTrends: null,
+                    aiEffectiveness: null,
+                    marketReturns: null
+                },
+
+                // 当前选中的剧集
+                selectedDrama: null,
+                // 当前视图
+                currentView: 'overview',
+                // 平台颜色映射
+                platformColors: {
+                    '爱奇艺': '#00be06',
+                    '腾讯视频': '#ff0000',
+                    '优酷': '#00a0e9',
+                    '芒果TV': '#ff5800',
+                    '哔哩哔哩': '#fb7299',
+                    '抖音短剧': '#000000',
+                    'CCTV': '#c00000'
+                },
+                // 类型颜色映射
+                genreColors: {
+                    '悬疑犯罪': '#8e44ad',
+                    '都市情感': '#3498db',
+                    '古装剧': '#e67e22',
+                    '科幻': '#2ecc71',
+                    '家庭剧': '#f1c40f',
+                    '青春校园': '#1abc9c',
+                    '职场剧': '#34495e',
+                    '主旋律': '#e74c3c',
+                    '历史正剧': '#7f8c8d',
+                    '都市奇幻': '#9b59b6'
+                }
+            }
+        },
+        // computed: {
+        //     // 根据筛选条件过滤的剧集
+        //     filteredDramas() {
+        //         let result = [...this.dramaData, ...this.shortDramaData];
+
+        //         if (this.filters.platform !== 'all') {
+        //             result = result.filter(drama => drama.platform === this.filters.platform);
+        //         }
+
+        //         if (this.filters.genre !== 'all') {
+        //             result = result.filter(drama => drama.genre === this.filters.genre);
+        //         }
+
+        //         if (this.filters.aiUsage !== 'all') {
+        //             const hasAi = this.filters.aiUsage === 'yes';
+        //             result = result.filter(drama => (drama.ai_usage.scriptwriting || drama.ai_usage.post_production) === hasAi);
+        //         }
+
+        //         result = result.filter(drama => drama.rating >= this.filters.minRating);
+
+        //         // 排序
+        //         result.sort((a, b) => {
+        //             let aValue = a[this.sortBy];
+        //             let bValue = b[this.sortBy];
+
+        //             if (this.sortOrder === 'asc') {
+        //                 return aValue - bValue;
+        //             } else {
+        //                 return bValue - aValue;
+        //             }
+        //         });
+
+        //         return result;
+        //     },
+
+        //     // 平台统计
+        //     platformStats() {
+        //         const stats = {};
+
+        //         this.platformData.forEach(platform => {
+        //             stats[platform.name] = {
+        //                 totalDramas: platform.total_dramas,
+        //                 avgRating: platform.average_rating,
+        //                 aiUsageRate: platform.ai_usage_rate,
+        //                 censorshipRate: platform.censorship_approval_rate,
+        //                 userBase: platform.user_base_millions
+        //             };
+        //         });
+
+        //         return stats;
+        //     },
+
+        //     // AI应用统计
+        //     aiStats() {
+        //         const scriptwritingCount = this.dramaData.filter(d => d.ai_usage.scriptwriting).length +
+        //             this.shortDramaData.filter(d => d.ai_usage.scriptwriting).length;
+
+        //         const postProductionCount = this.dramaData.filter(d => d.ai_usage.post_production).length +
+        //             this.shortDramaData.filter(d => d.ai_usage.post_production).length;
+
+        //         const totalDramas = this.dramaData.length + this.shortDramaData.length;
+
+        //         this.aiData = {
+        //             scriptwritingRate: (scriptwritingCount / totalDramas * 100).toFixed(1),
+        //             postProductionRate: (postProductionCount / totalDramas * 100).toFixed(1),
+        //             overallRate: ((scriptwritingCount + postProductionCount) / (totalDramas * 2) * 100).toFixed(1),
+        //             costReduction: 35.8,
+        //             timeReduction: 42.3
+        //         };
+        //     },
+
+        //     // 审查统计
+        //     censorshipStats() {
+        //         const genreApproval = {};
+
+        //         this.censorshipData.forEach(item => {
+        //             genreApproval[item.genre] = {
+        //                 approvalRate: item.approval_rate,
+        //                 marketReturn: item.market_return,
+        //                 riskFactor: item.risk_factor
+        //             };
+        //         });
+
+        //         return genreApproval;
+        //     }
+        // },
+        // methods: {
+        //     // 加载所有数据
+        //     async loadAllData() {
+        //         this.loading = true;
+
+        //         try {
+        //             // 加载剧集数据
+        //             const dramaResponse = await fetch('./data/drama_data.json');
+        //             const dramaData = await dramaResponse.json();
+        //             this.dramaData = dramaData.dramas;
+
+        //             const dramaResponse2 = await fetch('./data/drama_data_2.json');
+        //             const dramaData2 = await dramaResponse2.json();
+        //             this.dramaData = [...this.dramaData, ...dramaData2.dramas];
+
+        //             // 加载短剧数据
+        //             const shortDramaResponse = await fetch('./data/short_drama_data.json');
+        //             const shortDramaData = await shortDramaResponse.json();
+        //             this.shortDramaData = shortDramaData.short_dramas;
+
+        //             // 加载平台数据
+        //             const platformResponse = await fetch('./data/platform_competition_data.json');
+        //             const platformData = await platformResponse.json();
+        //             this.platformData = platformData.platforms;
+
+        //             // 加载AI应用数据
+        //             const aiResponse = await fetch('./data/ai_application_cases.json');
+        //             const aiData = await aiResponse.json();
+        //             this.aiApplicationData = aiData.ai_applications;
+
+        //             // 加载审查数据
+        //             const censorshipResponse = await fetch('./data/censorship_genre_correlation.json');
+        //             const censorshipData = await censorshipResponse.json();
+        //             this.censorshipData = censorshipData.censorship_data;
+
+        //             // 加载用户行为数据
+        //             const userBehaviorResponse = await fetch('./data/user_behavior_insights.json');
+        //             const userBehaviorData = await userBehaviorResponse.json();
+        //             this.userBehaviorData = userBehaviorData.user_behavior;
+
+        //             // 计算统计数据
+        //             this.calculateStats();
+
+        //             // 初始化图表
+        //             this.$nextTick(() => {
+        //                 this.initCharts();
+        //             });
+        //         } catch (error) {
+        //             console.error('数据加载错误:', error);
+        //         } finally {
+        //             this.loading = false;
+        //         }
+        //     },
+
+        //     // 计算统计数据
+        //     calculateStats() {
+        //         // 总剧集数
+        //         this.totalDramas = this.dramaData.length + this.shortDramaData.length;
+
+        //         // AI使用率
+        //         const scriptwritingCount = this.dramaData.filter(d => d.ai_usage.scriptwriting).length +
+        //             this.shortDramaData.filter(d => d.ai_usage.scriptwriting).length;
+
+        //         const postProductionCount = this.dramaData.filter(d => d.ai_usage.post_production).length +
+        //             this.shortDramaData.filter(d => d.ai_usage.post_production).length;
+
+        //         this.aiUsageRate = (((scriptwritingCount + postProductionCount) / (this.totalDramas * 2)) * 100).toFixed(1);
+
+        //         // 平均审查通过率
+        //         let totalApprovalRate = 0;
+        //         this.censorshipData.forEach(item => {
+        //             totalApprovalRate += item.approval_rate;
+        //         });
+
+        //         this.avgCensorshipApprovalRate = (totalApprovalRate / this.censorshipData.length).toFixed(1);
+        //     },
+
+        //     // 初始化所有图表
+        //     initCharts() {
+        //         this.initPlatformCompetitionChart();
+        //         this.initGenreDistributionChart();
+        //         this.initAiUsageByPlatformChart();
+        //         this.initCensorshipByGenreChart();
+        //         this.initUserDemographicsChart();
+        //         this.initViewingTrendsChart();
+        //         this.initAiEffectivenessChart();
+        //         this.initMarketReturnsChart();
+        //     },
+
+        //     // 平台竞争图表
+        //     initPlatformCompetitionChart() {
+        //         const chartDom = document.getElementById('platformCompetitionChart');
+        //         if (!chartDom) return;
+
+        //         this.charts.platformCompetition = echarts.init(chartDom);
+
+        //         const platformNames = this.platformData.map(p => p.name);
+        //         const totalDramas = this.platformData.map(p => p.total_dramas);
+        //         const avgRatings = this.platformData.map(p => p.average_rating);
+        //         const userBase = this.platformData.map(p => p.user_base_millions);
+
+        //         const option = {
+        //             tooltip: {
+        //                 trigger: 'axis',
+        //                 axisPointer: {
+        //                     type: 'shadow'
+        //                 }
+        //             },
+        //             legend: {
+        //                 data: ['热门剧集数量', '平均评分', '用户基数(百万)']
+        //             },
+        //             grid: {
+        //                 left: '3%',
+        //                 right: '4%',
+        //                 bottom: '3%',
+        //                 containLabel: true
+        //             },
+        //             xAxis: {
+        //                 type: 'category',
+        //                 data: platformNames
+        //             },
+        //             yAxis: [
+        //                 {
+        //                     type: 'value',
+        //                     name: '数量',
+        //                     position: 'left'
+        //                 },
+        //                 {
+        //                     type: 'value',
+        //                     name: '评分',
+        //                     min: 0,
+        //                     max: 10,
+        //                     position: 'right'
+        //                 }
+        //             ],
+        //             series: [
+        //                 {
+        //                     name: '热门剧集数量',
+        //                     type: 'bar',
+        //                     data: totalDramas,
+        //                     itemStyle: {
+        //                         color: function (params) {
+        //                             const platform = platformNames[params.dataIndex];
+        //                             return app.platformColors[platform];
+        //                         }
+        //                     }
+        //                 },
+        //                 {
+        //                     name: '平均评分',
+        //                     type: 'line',
+        //                     yAxisIndex: 1,
+        //                     data: avgRatings,
+        //                     symbol: 'circle',
+        //                     symbolSize: 8,
+        //                     lineStyle: {
+        //                         width: 3
+        //                     }
+        //                 },
+        //                 {
+        //                     name: '用户基数(百万)',
+        //                     type: 'bar',
+        //                     data: userBase,
+        //                     itemStyle: {
+        //                         color: function (params) {
+        //                             const platform = platformNames[params.dataIndex];
+        //                             return app.platformColors[platform] + '80'; // 添加透明度
+        //                         }
+        //                     }
+        //                 }
+        //             ]
+        //         };
+
+        //         this.charts.platformCompetition.setOption(option);
+        //     },
+
+        //     // 类型分布图表
+        //     initGenreDistributionChart() {
+        //         const chartDom = document.getElementById('genreDistributionChart');
+        //         if (!chartDom) return;
+
+        //         this.charts.genreDistribution = echarts.init(chartDom);
+
+        //         // 计算各类型剧集数量
+        //         const genreCounts = {};
+        //         [...this.dramaData, ...this.shortDramaData].forEach(drama => {
+        //             if (!genreCounts[drama.genre]) {
+        //                 genreCounts[drama.genre] = 0;
+        //             }
+        //             genreCounts[drama.genre]++;
+        //         });
+
+        //         const data = Object.keys(genreCounts).map(genre => ({
+        //             name: genre,
+        //             value: genreCounts[genre],
+        //             itemStyle: {
+        //                 color: this.genreColors[genre] || '#999'
+        //             }
+        //         }));
+
+        //         const option = {
+        //             tooltip: {
+        //                 trigger: 'item',
+        //                 formatter: '{a} <br/>{b}: {c} ({d}%)'
+        //             },
+        //             legend: {
+        //                 orient: 'vertical',
+        //                 right: 10,
+        //                 top: 'center',
+        //                 data: Object.keys(genreCounts)
+        //             },
+        //             series: [
+        //                 {
+        //                     name: '类型分布',
+        //                     type: 'pie',
+        //                     radius: ['40%', '70%'],
+        //                     avoidLabelOverlap: false,
+        //                     label: {
+        //                         show: false,
+        //                         position: 'center'
+        //                     },
+        //                     emphasis: {
+        //                         label: {
+        //                             show: true,
+        //                             fontSize: '18',
+        //                             fontWeight: 'bold'
+        //                         }
+        //                     },
+        //                     labelLine: {
+        //                         show: false
+        //                     },
+        //                     data: data
+        //                 }
+        //             ]
+        //         };
+
+        //         this.charts.genreDistribution.setOption(option);
+        //     },
+
+        //     // AI使用率图表
+        //     initAiUsageByPlatformChart() {
+        //         const chartDom = document.getElementById('aiUsageByPlatformChart');
+        //         if (!chartDom) return;
+
+        //         this.charts.aiUsageByPlatform = echarts.init(chartDom);
+
+        //         const platformNames = this.platformData.map(p => p.name);
+        //         const scriptwritingRates = this.platformData.map(p => p.ai_scriptwriting_rate);
+        //         const postProductionRates = this.platformData.map(p => p.ai_post_production_rate);
+
+        //         const option = {
+        //             tooltip: {
+        //                 trigger: 'axis',
+        //                 axisPointer: {
+        //                     type: 'shadow'
+        //                 }
+        //             },
+        //             legend: {
+        //                 data: ['AI剧本创作', 'AI后期制作']
+        //             },
+        //             grid: {
+        //                 left: '3%',
+        //                 right: '4%',
+        //                 bottom: '3%',
+        //                 containLabel: true
+        //             },
+        //             xAxis: {
+        //                 type: 'value',
+        //                 boundaryGap: [0, 0.01],
+        //                 axisLabel: {
+        //                     formatter: '{value}%'
+        //                 }
+        //             },
+        //             yAxis: {
+        //                 type: 'category',
+        //                 data: platformNames
+        //             },
+        //             series: [
+        //                 {
+        //                     name: 'AI剧本创作',
+        //                     type: 'bar',
+        //                     data: scriptwritingRates,
+        //                     itemStyle: {
+        //                         color: '#3498db'
+        //                     }
+        //                 },
+        //                 {
+        //                     name: 'AI后期制作',
+        //                     type: 'bar',
+        //                     data: postProductionRates,
+        //                     itemStyle: {
+        //                         color: '#2ecc71'
+        //                     }
+        //                 }
+        //             ]
+        //         };
+
+        //         this.charts.aiUsageByPlatform.setOption(option);
+        //     },
+
+        //     // 审查通过率图表
+        //     initCensorshipByGenreChart() {
+        //         const chartDom = document.getElementById('censorshipByGenreChart');
+        //         if (!chartDom) return;
+
+        //         this.charts.censorshipByGenre = echarts.init(chartDom);
+
+        //         const genres = this.censorshipData.map(item => item.genre);
+        //         const approvalRates = this.censorshipData.map(item => item.approval_rate);
+        //         const marketReturns = this.censorshipData.map(item => item.market_return);
+
+        //         const option = {
+        //             tooltip: {
+        //                 trigger: 'axis',
+        //                 axisPointer: {
+        //                     type: 'cross',
+        //                     crossStyle: {
+        //                         color: '#999'
+        //                     }
+        //                 }
+        //             },
+        //             legend: {
+        //                 data: ['审查通过率', '市场回报率']
+        //             },
+        //             xAxis: [
+        //                 {
+        //                     type: 'category',
+        //                     data: genres,
+        //                     axisPointer: {
+        //                         type: 'shadow'
+        //                     },
+        //                     axisLabel: {
+        //                         interval: 0,
+        //                         rotate: 30
+        //                     }
+        //                 }
+        //             ],
+        //             yAxis: [
+        //                 {
+        //                     type: 'value',
+        //                     name: '审查通过率',
+        //                     min: 0,
+        //                     max: 100,
+        //                     interval: 20,
+        //                     axisLabel: {
+        //                         formatter: '{value}%'
+        //                     }
+        //                 },
+        //                 {
+        //                     type: 'value',
+        //                     name: '市场回报率',
+        //                     min: 0,
+        //                     max: 5,
+        //                     interval: 1,
+        //                     axisLabel: {
+        //                         formatter: '{value}'
+        //                     }
+        //                 }
+        //             ],
+        //             series: [
+        //                 {
+        //                     name: '审查通过率',
+        //                     type: 'bar',
+        //                     data: approvalRates,
+        //                     itemStyle: {
+        //                         color: function (params) {
+        //                             const genre = genres[params.dataIndex];
+        //                             return app.genreColors[genre] || '#999';
+        //                         }
+        //                     }
+        //                 },
+        //                 {
+        //                     name: '市场回报率',
+        //                     type: 'line',
+        //                     yAxisIndex: 1,
+        //                     data: marketReturns,
+        //                     symbol: 'diamond',
+        //                     symbolSize: 10,
+        //                     lineStyle: {
+        //                         width: 3,
+        //                         color: '#e74c3c'
+        //                     },
+        //                     itemStyle: {
+        //                         color: '#e74c3c'
+        //                     }
+        //                 }
+        //             ]
+        //         };
+
+        //         this.charts.censorshipByGenre.setOption(option);
+        //     },
+
+        //     // 用户人口统计图表
+        //     initUserDemographicsChart() {
+        //         const chartDom = document.getElementById('userDemographicsChart');
+        //         if (!chartDom) return;
+
+        //         this.charts.userDemographics = echarts.init(chartDom);
+
+        //         const ageGroups = Object.keys(this.userBehaviorData.demographic_insights.age_distribution);
+        //         const agePercentages = ageGroups.map(age => this.userBehaviorData.demographic_insights.age_distribution[age].percentage * 100);
+
+        //         const genderData = [
+        //             {
+        //                 name: '女性',
+        //                 value: this.userBehaviorData.demographic_insights.gender_distribution.female.percentage * 100
+        //             },
+        //             {
+        //                 name: '男性',
+        //                 value: this.userBehaviorData.demographic_insights.gender_distribution.male.percentage * 100
+        //             }
+        //         ];
+
+        //         const option = {
+        //             tooltip: {
+        //                 trigger: 'item',
+        //                 formatter: '{a} <br/>{b}: {c}%'
+        //             },
+        //             grid: {
+        //                 top: '10%',
+        //                 bottom: '55%'
+        //             },
+        //             xAxis: {
+        //                 type: 'category',
+        //                 data: ageGroups,
+        //                 axisLabel: {
+        //                     interval: 0
+        //                 }
+        //             },
+        //             yAxis: {
+        //                 type: 'value',
+        //                 axisLabel: {
+        //                     formatter: '{value}%'
+        //                 }
+        //             },
+        //             series: [
+        //                 {
+        //                     name: '年龄分布',
+        //                     type: 'bar',
+        //                     data: agePercentages,
+        //                     itemStyle: {
+        //                         color: function (params) {
+        //                             const colors = ['#3498db', '#2ecc71', '#e67e22', '#9b59b6'];
+        //                             return colors[params.dataIndex % colors.length];
+        //                         }
+        //                     }
+        //                 },
+        //                 {
+        //                     name: '性别分布',
+        //                     type: 'pie',
+        //                     radius: ['30%', '50%'],
+        //                     center: ['50%', '75%'],
+        //                     data: genderData,
+        //                     itemStyle: {
+        //                         color: function (params) {
+        //                             return params.name === '女性' ? '#e84393' : '#0984e3';
+        //                         }
+        //                     },
+        //                     label: {
+        //                         formatter: '{b}: {c}%'
+        //                     }
+        //                 }
+        //             ]
+        //         };
+
+        //         this.charts.userDemographics.setOption(option);
+        //     },
+
+        //     // 观看趋势图表
+        //     initViewingTrendsChart() {
+        //         const chartDom = document.getElementById('viewingTrendsChart');
+        //         if (!chartDom) return;
+
+        //         this.charts.viewingTrends = echarts.init(chartDom);
+
+        //         const weekdayTimes = ['morning', 'afternoon', 'evening', 'night'];
+        //         const weekdayData = weekdayTimes.map(time => this.userBehaviorData.viewing_patterns.peak_viewing_times.weekdays[time] * 100);
+        //         const weekendData = weekdayTimes.map(time => this.userBehaviorData.viewing_patterns.peak_viewing_times.weekends[time] * 100);
+
+        //         const option = {
+        //             tooltip: {
+        //                 trigger: 'axis',
+        //                 axisPointer: {
+        //                     type: 'shadow'
+        //                 }
+        //             },
+        //             legend: {
+        //                 data: ['工作日', '周末']
+        //             },
+        //             grid: {
+        //                 left: '3%',
+        //                 right: '4%',
+        //                 bottom: '3%',
+        //                 containLabel: true
+        //             },
+        //             xAxis: {
+        //                 type: 'category',
+        //                 data: ['早晨', '下午', '晚上', '深夜']
+        //             },
+        //             yAxis: {
+        //                 type: 'value',
+        //                 axisLabel: {
+        //                     formatter: '{value}%'
+        //                 }
+        //             },
+        //             series: [
+        //                 {
+        //                     name: '工作日',
+        //                     type: 'bar',
+        //                     data: weekdayData,
+        //                     itemStyle: {
+        //                         color: '#3498db'
+        //                     }
+        //                 },
+        //                 {
+        //                     name: '周末',
+        //                     type: 'bar',
+        //                     data: weekendData,
+        //                     itemStyle: {
+        //                         color: '#e74c3c'
+        //                     }
+        //                 }
+        //             ]
+        //         };
+
+        //         this.charts.viewingTrends.setOption(option);
+        //     },
+
+        //     // AI效果图表
+        //     initAiEffectivenessChart() {
+        //         const chartDom = document.getElementById('aiEffectivenessChart');
+        //         if (!chartDom) return;
+
+        //         this.charts.aiEffectiveness = echarts.init(chartDom);
+
+        //         // 提取AI应用类型和成功率
+        //         const aiTypes = this.aiApplicationData.map(item => item.application_type);
+        //         const successRates = this.aiApplicationData.map(item => item.success_rate);
+        //         const costReductions = this.aiApplicationData.map(item => item.cost_reduction_percentage);
+
+        //         const option = {
+        //             tooltip: {
+        //                 trigger: 'axis',
+        //                 axisPointer: {
+        //                     type: 'cross',
+        //                     crossStyle: {
+        //                         color: '#999'
+        //                     }
+        //                 }
+        //             },
+        //             legend: {
+        //                 data: ['成功率', '成本节约']
+        //             },
+        //             xAxis: [
+        //                 {
+        //                     type: 'category',
+        //                     data: aiTypes,
+        //                     axisPointer: {
+        //                         type: 'shadow'
+        //                     },
+        //                     axisLabel: {
+        //                         interval: 0,
+        //                         rotate: 30
+        //                     }
+        //                 }
+        //             ],
+        //             yAxis: [
+        //                 {
+        //                     type: 'value',
+        //                     name: '成功率',
+        //                     min: 0,
+        //                     max: 100,
+        //                     interval: 20,
+        //                     axisLabel: {
+        //                         formatter: '{value}%'
+        //                     }
+        //                 },
+        //                 {
+        //                     type: 'value',
+        //                     name: '成本节约',
+        //                     min: 0,
+        //                     max: 100,
+        //                     interval: 20,
+        //                     axisLabel: {
+        //                         formatter: '{value}%'
+        //                     }
+        //                 }
+        //             ],
+        //             series: [
+        //                 {
+        //                     name: '成功率',
+        //                     type: 'bar',
+        //                     data: successRates,
+        //                     itemStyle: {
+        //                         color: '#3498db'
+        //                     }
+        //                 },
+        //                 {
+        //                     name: '成本节约',
+        //                     type: 'line',
+        //                     yAxisIndex: 1,
+        //                     data: costReductions,
+        //                     symbol: 'circle',
+        //                     symbolSize: 8,
+        //                     lineStyle: {
+        //                         width: 3,
+        //                         color: '#2ecc71'
+        //                     },
+        //                     itemStyle: {
+        //                         color: '#2ecc71'
+        //                     }
+        //                 }
+        //             ]
+        //         };
+
+        //         this.charts.aiEffectiveness.setOption(option);
+        //     },
+
+        //     // 市场回报图表
+        //     initMarketReturnsChart() {
+        //         const chartDom = document.getElementById('marketReturnsChart');
+        //         if (!chartDom) return;
+
+        //         this.charts.marketReturns = echarts.init(chartDom);
+
+        //         // 提取类型、审查通过率和市场回报率
+        //         const genres = this.censorshipData.map(item => item.genre);
+        //         const approvalRates = this.censorshipData.map(item => item.approval_rate);
+        //         const marketReturns = this.censorshipData.map(item => item.market_return);
+        //         const riskFactors = this.censorshipData.map(item => item.risk_factor);
+
+        //         const data = genres.map((genre, index) => ({
+        //             name: genre,
+        //             value: [approvalRates[index], marketReturns[index], riskFactors[index] * 20, genre],
+        //             itemStyle: {
+        //                 color: this.genreColors[genre] || '#999'
+        //             }
+        //         }));
+
+        //         const option = {
+        //             tooltip: {
+        //                 formatter: function (params) {
+        //                     return params.data.name + '<br/>' +
+        //                         '审查通过率: ' + params.data.value[0] + '%<br/>' +
+        //                         '市场回报率: ' + params.data.value[1] + '<br/>' +
+        //                         '风险因子: ' + (params.data.value[2] / 20).toFixed(1);
+        //                 }
+        //             },
+        //             xAxis: {
+        //                 type: 'value',
+        //                 name: '审查通过率',
+        //                 axisLabel: {
+        //                     formatter: '{value}%'
+        //                 }
+        //             },
+        //             yAxis: {
+        //                 type: 'value',
+        //                 name: '市场回报率'
+        //             },
+        //             series: [
+        //                 {
+        //                     name: '市场回报与风险',
+        //                     type: 'scatter',
+        //                     symbolSize: function (data) {
+        //                         return data[2];
+        //                     },
+        //                     data: data,
+        //                     label: {
+        //                         show: true,
+        //                         formatter: function (param) {
+        //                             return param.data.value[3];
+        //                         },
+        //                         position: 'top'
+        //                     },
+        //                     emphasis: {
+        //                         label: {
+        //                             show: true,
+        //                             fontWeight: 'bold',
+        //                             fontSize: 14
+        //                         }
+        //                     }
+        //                 }
+        //             ]
+        //         };
+
+        //         this.charts.marketReturns.setOption(option);
+        //     },
+
+        //     // 设置当前视图
+        //     setView(view) {
+        //         this.currentView = view;
+
+        //         // 更新图表大小
+        //         this.$nextTick(() => {
+        //             for (const chart in this.charts) {
+        //                 if (this.charts[chart]) {
+        //                     this.charts[chart].resize();
+        //                 }
+        //             }
+        //         });
+        //     },
+
+        //     // 显示剧集详情
+        //     showDramaDetails(drama) {
+        //         this.selectedDrama = drama;
+        //         $('#dramaDetailModal').modal('show');
+        //     },
+
+        //     // 导出报告为PDF
+        //     exportReport() {
+        //         window.print();
+        //     }
+        // },
+        // // mounted() {
+        //     this.loadAllData();
+        //     this.aiStats();  // 在 mounted 生命周期钩子中调用 aiStats 方法
+        //     // 响应窗口大小变化
+        //     window.addEventListener('resize', () => {
+        //         for (const chart in this.charts) {
+        //             if (this.charts[chart]) {
+        //                 this.charts[chart].resize();
+        //             }
+        //         }
+        //     });
+        // }
+    })
+</script>
+
+</html>
