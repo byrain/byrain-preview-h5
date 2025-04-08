@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阅读风格测试 | 世界图书日特别活动</title>
+    <style>
+        :root {
+            --primary-color: #3b5998;
+            --secondary-color: #8b9dc3;
+            --accent-color: #f7b731;
+            --light-bg: #f8f9fa;
+            --dark-text: #333;
+            --light-text: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-text);
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.2em;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+
+        .question-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .question-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            padding: 15px;
+            background-color: #f1f3f8;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .option:hover {
+            background-color: #e4e7f0;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .option.selected {
+            background-color: #d6e4ff;
+            border-left: 4px solid var(--primary-color);
+            font-weight: 600;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2d4373;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        #resultContainer {
+            display: none;
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            animation: fadeIn 1s ease;
+        }
+
+        .result-header {
+            font-size: 2em;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .result-content {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .result-style {
+            font-size: 1.8em;
+            color: var(--primary-color);
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .secondary-style {
+            font-size: 1.3em;
+            color: var(--secondary-color);
+            margin: 10px 0;
+        }
+
+        .score-details {
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .score-bar-container {
+            width: 100%;
+            height: 15px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .score-bar {
+            height: 100%;
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+        }
+
+        .restart-btn {
+            margin-top: 20px;
+            background-color: var(--accent-color);
+            color: var(--dark-text);
+        }
+
+        .restart-btn:hover {
+            background-color: #e5a012;
+        }
+
+        .style-description {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            margin: 20px 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            header {
+                padding: 20px 0;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .question {
+                font-size: 1.1em;
+            }
+
+            .option {
+                padding: 12px;
+            }
+
+            button {
+                padding: 10px 20px;
+            }
+
+            .result-style {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>探索你的阅读风格</h1>
+            <p>世界图书日特别活动 | 完成12道题，发现你的阅读性格</p>
+        </header>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div id="quizContainer">
+            <!-- 问题1 -->
+            <div class="question-container active" data-question="1">
+                <div class="question">1. 当你结束一天忙碌的学习或工作，准备阅读时，你会选择：</div>
+                <div class="options">
+                    <div class="option" data-value="A">A. 节奏明快，充满冒险情节的小说，快速进入刺激的阅读氛围，释放压力。</div>
+                    <div class="option" data-value="B">B. 文字优美、意境深远的散文或诗集，在舒缓的节奏中舒缓情绪。</div>
+                    <div class="option" data-value="C">C. 内容实用，能帮助提升专业技能或解决实际问题的工具书。</div>
+                </div>
+                <div class="navigation">
+                    <button id="prevBtn1" disabled>上一题</button>
+                    <button id="nextBtn1" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- 问题2 -->
+            <div class="question-container" data-question="2">
+                <div class="question">2. 在书店或图书馆选书时，你通常：</div>
+                <div class="options">
+                    <div class="option" data-value="A">A. 直奔自己熟悉且喜爱的书籍类别区域，挑选同类型的新书。</div>
+                    <div class="option" data-value="B">B. 在各个书架间随意浏览，被书籍的书名、封面吸引而驻足。</div>
+                    <div class="option" data-value="C">C. 通过查询推荐榜单、书评，寻找热门且口碑好的书籍。</div>
+                </div>
+                <div class="navigation">
+                    <button id="prevBtn2">上一题</button>
+                    <button id="nextBtn2" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- 问题3 -->
+            <div class="question-container" data-question="3">
+                <div class="question">3. 当阅读一本需要深入思考的理论书籍时，你会：</div>
+                <div class="options">
+                    <div class="option" data-value="A">A. 认真研读，逐字逐句理解，做好笔记，梳理逻辑。</div>
+                    <div class="option" data-value="B">B. 大致浏览，抓住核心观点，结合生活实际去感悟。</div>
+                    <div class="option" data-value="C">C. 挑选感兴趣的章节阅读，跳过晦涩难懂的部分。</div>
+                </div>
+                <div class="navigation">
+                    <button id="prevBtn3">上一题</button>
+                    <button id="nextBtn3" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- 问题4 -->
+            <div class="question-container" data-question="4">
+                <div class="question">4. 你阅读的主要目的是：</div>
+                <div class="options">
+                    <div class="option" data-value="A">A. 娱乐消遣，享受阅读带来的轻松愉悦。</div>
+                    <div class="option" data-value="B">B. 获取知识，拓宽视野，提升自我。</div>
+                    <div class="option" data-value="C">C. 寻找情感共鸣，从书中获得启发和慰藉。</div>
+                </div>
+                <div class="navigation">
+                    <button id="prevBtn4">上一题</button>
+                    <button id="nextBtn4" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- 问题5 -->
+            <div class="question-container" data-question="5">
+                <div class="question">5. 对于系列书籍，你的态度是：</div>
+                <div class="options">
+                    <div class="option" data-value="A">A. 一旦开始阅读某一系列的第一本，就会追完全部系列。</div>
+                    <div class="option" data-value="B">B. 选择性阅读，只挑选评价高的几本阅读。</div>
+                    <div class="option" data-value="C">C. 很少阅读系列书籍，更倾向于独立成册的作品。</div>
+                </div>
+                <div class="navigation">
+                    <button id="prevBtn5">上一题</button>
+                    <button id="nextBtn5" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- 问题6 -->
+            <div class="question-container" data-question="6">
+                <div class="question">6. 当你读到一本喜欢的书时，你会：</div>
+                <div class="options">
+                    <div class="option" data-value="A">A. 向身边所有人推荐，分享阅读的喜悦。</div>
+                    <div class="option" data-value="B">B. 默默记在心里，日后有机会再重温。</div>
+                    <div class="option" data-value="C">C. 寻找作者的其他作品，深入了解作者的创作风格。</div>
+                </div>
+                <div class="navigation">
+                    <button id="prevBtn6">上一题</button>
+                    <button id="nextBtn6" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- 问题7 -->
+            <div class="question-container" data-question="7">
+                <div class="question">7. 在阅读过程中，你更关注：</div>
+                <div class="options">
+                    <div class="option" data-value="A">A. 精彩的情节和故事发展，迫不及待想知道结局。</div>
+                    <div class="option" data-value="B">B. 书中对人物的刻画，感受角色的内心世界。</div>
+                    <div class="option" data-value="C">C. 作者传达的思想和观点，思考对自身的影响。</div>
+                </div>
+                <div class="navigation">
+                    <button id="prevBtn7">上一题</button>
+                    <button id="nextBtn7" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- 问题8 -->
+            <div class="question-container" data-question="8">
+                <div class="question">8. 你喜欢的书籍排版风格是：</div>
+                <div class="options">
+                    <div class="option" data-value="A">A. 文字紧凑，信息量大，能够快速推进阅读。</div>
+                    <div class="option" data-value="B">B. 图文并茂，有较多留白，阅读体验轻松。</div>
+                    <div class="option" data-value="C">C. 字体适中，段落分明，便于理解和思考。</div>
+                </div>
+                <div class="navigation">
+                    <button id="prevBtn8">上一题</button>
+                    <button id="nextBtn8" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- 问题9 -->
+            <div class="question-container" data-question="9">
+                <div class="question">9. 当遇到一本内容复杂、难以理解的书时，你会：</div>
+                <div class="options">
+                    <div class="option" data-value="A">A. 坚持不懈，反复阅读，直至完全理解。</div>
+                    <div class="option" data-value="B">B. 暂时搁置，等知识储备或心境合适时再尝试。</div>
+                    <div class="option" data-value="C">C. 放弃阅读，选择其他更易读的书籍。</div>
+                </div>
+                <div class="navigation">
+                    <button id="prevBtn9">上一题</button>
+                    <button id="nextBtn9" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- 问题10 -->
+            <div class="question-container" data-question="10">
+                <div class="question">10. 如果亲子阅读时，你会优先选择：</div>
+                <div class="options">
+                    <div class="option" data-value="A">A. 互动性强的立体书、翻翻书，增加亲子乐趣。</div>
+                    <div class="option" data-value="B">B. 蕴含成长道理的童话故事书，引导孩子成长。</div>
+                    <div class="option" data-value="C">C. 和孩子兴趣相关，如科普、冒险类书籍，激发孩子探索欲。</div>
+                </div>
+                <div class="navigation">
+                    <button id="prevBtn10">上一题</button>
+                    <button id="nextBtn10" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- 问题11 -->
+            <div class="question-container" data-question="11">
+                <div class="question">11. 当你对体育运动感兴趣时，会选择阅读：</div>
+                <div class="options">
+                    <div class="option" data-value="A">A. 运动员的自传，了解他们的成长历程与拼搏精神。</div>
+                    <div class="option" data-value="B">B. 运动技巧类书籍，提升自己的运动水平。</div>
+                    <div class="option" data-value="C">C. 体育赛事纪实类书籍，感受竞技体育的魅力。</div>
+                </div>
+                <div class="navigation">
+                    <button id="prevBtn11">上一题</button>
+                    <button id="nextBtn11" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- 问题12 -->
+            <div class="question-container" data-question="12">
+                <div class="question">12. 当你压力大时，你更倾向于阅读：</div>
+                <div class="options">
+                    <div class="option" data-value="A">A. 幽默风趣的漫画或段子集，开怀大笑缓解压力。</div>
+                    <div class="option" data-value="B">B. 正念冥想类书籍，学习放松身心的方法。</div>
+                    <div class="option" data-value="C">C. 温馨治愈的故事书，平复紧张情绪。</div>
+                </div>
+                <div class="navigation">
+                    <button id="prevBtn12">上一题</button>
+                    <button id="submitBtn">完成测试</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultContainer">
+            <div class="result-header">测试结果</div>
+            <div class="result-content">
+                <div class="result-style">你的主要阅读风格：<span id="primaryStyle"></span></div>
+                <div class="secondary-style">次要阅读风格：<span id="secondaryStyle"></span></div>
+
+                <div class="style-description" id="styleDescription">
+                    <!-- 风格描述将在这里显示 -->
+                </div>
+
+                <div class="score-details" id="scoreDetails">
+                    <!-- 分数详情将在这里显示 -->
+                </div>
+            </div>
+            <button class="restart-btn" id="restartBtn">重新测试</button>
+        </div>
+    </div>
+
+    <script>
+        // 阅读风格定义及初始分数
+        const readingStyles = {
+            "冒险刺激型": { score: 0, description: "你是一位追求阅读时紧张刺激感的读者，热爱跌宕起伏的情节，可能喜欢悬疑、冒险、奇幻等类型的书籍，阅读对你来说是一次冒险旅程。" },
+            "文艺抒情型": { score: 0, description: "你钟情于优美文字，注重情感体验与心灵共鸣，可能偏爱诗歌、散文、文艺小说等，你享受文字带来的美感和情感流动。" },
+            "实用进取型": { score: 0, description: "你期望通过阅读获取知识、提升能力，偏爱实用性强的书籍，如专业书籍、自我提升类作品，阅读对你而言是自我投资的过程。" },
+            "专一探索型": { score: 0, description: "你对特定题材充满热情，喜欢深入探索某一领域的作品，可能会成为某一作家或某一类型书籍的忠实粉丝。" },
+            "多元好奇型": { score: 0, description: "你对不同题材、风格的书籍均有探索欲望，喜欢尝试各种类型的作品，阅读广泛，知识面丰富。" },
+            "亲子陪伴型": { score: 0, description: "你重视亲子阅读，通过阅读增进亲子关系，助力孩子成长，你可能会精心挑选适合孩子的读物，并乐于与孩子分享阅读时光。" },
+            "体育热爱型": { score: 0, description: "你热爱体育运动，希望通过阅读了解体育知识和运动员故事，体育主题的书籍能激发你的阅读热情。" },
+            "emo急救包": { score: 0, description: "你会借助阅读缓解压力，放松身心，从崩溃到自愈的进阶指南，阅读对你而言是一种情绪疗愈的方式。" },
+            "快乐续命水": { score: 0, description: "给疲惫成年人的精神SPA，你通过轻松愉快的阅读体验寻找快乐，喜欢那些能带给你欢笑和放松的书籍。" },
+            "细节控考据党": { score: 0, description: "你喜欢探究词语渊源、语法逻辑，对汉字演变、读音规范等有执着的兴趣，你关注文字背后的知识体系，享受深入研究的过程。" }
+        };
+
+        // 定义题目选项对应的分数
+        const scoringRules = {
+            1: {
+                A: { "冒险刺激型": 2, "快乐续命水": 1 },
+                B: { "文艺抒情型": 2, "emo急救包": 1 },
+                C: { "实用进取型": 3 }
+            },
+            2: {
+                A: { "专一探索型": 3 },
+                B: { "多元好奇型": 3 },
+                C: { "实用进取型": 1, "细节控考据党": 1 }
+            },
+            3: {
+                A: { "细节控考据党": 3, "实用进取型": 1 },
+                B: { "文艺抒情型": 1, "emo急救包": 1 },
+                C: { "多元好奇型": 2, "快乐续命水": 1 }
+            },
+            4: {
+                A: { "快乐续命水": 3, "冒险刺激型": 1 },
+                B: { "实用进取型": 3, "细节控考据党": 1 },
+                C: { "文艺抒情型": 2, "emo急救包": 2 }
+            },
+            5: {
+                A: { "专一探索型": 3, "冒险刺激型": 1 },
+                B: { "多元好奇型": 2, "实用进取型": 1 },
+                C: { "多元好奇型": 1, "文艺抒情型": 1 }
+            },
+            6: {
+                A: { "快乐续命水": 2, "亲子陪伴型": 1 },
+                B: { "文艺抒情型": 2, "emo急救包": 1 },
+                C: { "专一探索型": 2, "细节控考据党": 1 }
+            },
+            7: {
+                A: { "冒险刺激型": 3, "体育热爱型": 1 },
+                B: { "文艺抒情型": 3 },
+                C: { "实用进取型": 2, "细节控考据党": 2 }
+            },
+            8: {
+                A: { "实用进取型": 2, "细节控考据党": 1 },
+                B: { "多元好奇型": 2, "亲子陪伴型": 1 },
+                C: { "专一探索型": 1, "emo急救包": 1 }
+            },
+            9: {
+                A: { "细节控考据党": 3, "专一探索型": 1 },
+                B: { "实用进取型": 1, "多元好奇型": 1 },
+                C: { "快乐续命水": 2, "冒险刺激型": 1 }
+            },
+            10: {
+                A: { "亲子陪伴型": 3, "快乐续命水": 1 },
+                B: { "亲子陪伴型": 3, "文艺抒情型": 1 },
+                C: { "亲子陪伴型": 2, "多元好奇型": 1 }
+            },
+            11: {
+                A: { "体育热爱型": 3, "emo急救包": 1 },
+                B: { "体育热爱型": 3, "实用进取型": 1 },
+                C: { "体育热爱型": 3, "冒险刺激型": 1 }
+            },
+            12: {
+                A: { "快乐续命水": 3 },
+                B: { "emo急救包": 3 },
+                C: { "emo急救包": 2, "文艺抒情型": 1 }
+            }
+        };
+
+        // 用户答案
+        const userAnswers = {};
+        let currentQuestion = 1;
+
+        // DOM元素
+        const progressBar = document.getElementById('progressBar');
+        const quizContainer = document.getElementById('quizContainer');
+        const resultContainer = document.getElementById('resultContainer');
+        const primaryStyleEl = document.getElementById('primaryStyle');
+        const secondaryStyleEl = document.getElementById('secondaryStyle');
+        const styleDescriptionEl = document.getElementById('styleDescription');
+        const scoreDetailsEl = document.getElementById('scoreDetails');
+        const restartBtn = document.getElementById('restartBtn');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // 初始化进度条
+        updateProgressBar();
+
+        // 为所有选项添加事件监听器
+        document.querySelectorAll('.option').forEach(option => {
+            option.addEventListener('click', function () {
+                // 移除同一问题中其他选项的选中状态
+                const questionContainer = this.closest('.question-container');
+                questionContainer.querySelectorAll('.option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+
+                // 添加当前选项的选中状态
+                this.classList.add('selected');
+
+                // 获取问题编号和选项值
+                const questionNumber = questionContainer.dataset.question;
+                const optionValue = this.dataset.value;
+
+                // 保存用户选择
+                userAnswers[questionNumber] = optionValue;
+
+                // 启用下一题按钮
+                document.getElementById(`nextBtn${questionNumber}`).disabled = false;
+
+                // 如果是最后一题，启用提交按钮
+                if (questionNumber === '12') {
+                    submitBtn.disabled = false;
+                }
+            });
+        });
+
+        // 为所有"下一题"按钮添加事件监听器
+        for (let i = 1; i <= 12; i++) {
+            const nextBtn = document.getElementById(`nextBtn${i}`);
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function () {
+                    goToQuestion(i + 1);
+                });
+            }
+
+            const prevBtn = document.getElementById(`prevBtn${i}`);
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function () {
+                    goToQuestion(i - 1);
+                });
+            }
+        }
+
+        // 提交按钮事件监听器
+        submitBtn.addEventListener('click', function () {
+            calculateResult();
+        });
+
+        // 重新测试按钮事件监听器
+        restartBtn.addEventListener('click', function () {
+            resetQuiz();
+        });
+
+        // 跳转到指定问题
+        function goToQuestion(questionNumber) {
+            // 隐藏当前问题
+            document.querySelector(`.question-container[data-question="${currentQuestion}"]`).classList.remove('active');
+
+            // 显示目标问题
+            document.querySelector(`.question-container[data-question="${questionNumber}"]`).classList.add('active');
+
+            // 更新当前问题
+            currentQuestion = questionNumber;
+
+            // 更新进度条
+            updateProgressBar();
+
+            // 如果该问题已经回答过，确保"下一题"按钮是启用的
+            if (userAnswers[questionNumber]) {
+                document.getElementById(`nextBtn${questionNumber}`).disabled = false;
+            } else {
+                document.getElementById(`nextBtn${questionNumber}`).disabled = true;
+            }
+        }
+
+        // 更新进度条
+        function updateProgressBar() {
+            const progress = (currentQuestion - 1) / 12 * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // 计算测试结果
+        function calculateResult() {
+            // 重置所有风格分数
+            Object.keys(readingStyles).forEach(style => {
+                readingStyles[style].score = 0;
+            });
+
+            // 根据用户选择计算分数
+            Object.keys(userAnswers).forEach(question => {
+                const answer = userAnswers[question];
+                const scoreRules = scoringRules[question][answer];
+
+                if (scoreRules) {
+                    Object.keys(scoreRules).forEach(style => {
+                        readingStyles[style].score += scoreRules[style];
+                    });
+                }
+            });
+
+            // 按分数从高到低排序风格
+            const sortedStyles = Object.keys(readingStyles).sort((a, b) => {
+                return readingStyles[b].score - readingStyles[a].score;
+            });
+
+            // 显示主要和次要阅读风格
+            const primaryStyle = sortedStyles[0];
+            const secondaryStyle = sortedStyles[1];
+
+            primaryStyleEl.textContent = primaryStyle;
+            secondaryStyleEl.textContent = secondaryStyle;
+
+            // 显示主要风格描述
+            styleDescriptionEl.innerHTML = `<strong>${primaryStyle}：</strong>${readingStyles[primaryStyle].description}`;
+
+            // 显示所有风格得分
+            let scoreDetailsHTML = '<h3>你的阅读风格分数明细：</h3>';
+
+            sortedStyles.forEach(style => {
+                const score = readingStyles[style].score;
+                const percentage = Math.round((score / 36) * 100); // 假设满分为36
+
+                scoreDetailsHTML += `
+            <div class="score-item">
+                <div>
+                    <strong>${style}</strong>
+                    <div class="score-bar-container">
+                        <div class="score-bar" style="width: ${percentage}%"></div>
+                    </div>
+                </div>
+                <div>${score}分</div>
+            </div>
+        `;
+            });
+
+            scoreDetailsEl.innerHTML = scoreDetailsHTML;
+
+            // 隐藏问题容器，显示结果容器
+            quizContainer.style.display = 'none';
+            resultContainer.style.display = 'block';
+        }
+
+        // 重置测试
+        function resetQuiz() {
+            // 清空用户答案
+            Object.keys(userAnswers).forEach(key => {
+                delete userAnswers[key];
+            });
+
+            // 重置所有选项的选中状态
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected');
+            });
+
+            // 禁用所有下一题按钮
+            for (let i = 1; i <= 12; i++) {
+                const nextBtn = document.getElementById(`nextBtn${i}`);
+                if (nextBtn && i < 12) {
+                    nextBtn.disabled = true;
+                }
+            }
+
+            // 重置当前问题为1
+            currentQuestion = 1;
+
+            // 显示第一个问题
+            document.querySelectorAll('.question-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            document.querySelector('.question-container[data-question="1"]').classList.add('active');
+
+            // 更新进度条
+            updateProgressBar();
+
+            // 显示问题容器，隐藏结果容器
+            quizContainer.style.display = 'block';
+            resultContainer.style.display = 'none';
+        }
+
+        // 为移动设备优化体验
+        function optimizeForMobile() {
+            if (window.innerWidth <= 600) {
+                document.querySelectorAll('.option').forEach(option => {
+                    option.style.padding = '10px';
+                    option.style.fontSize = '0.9em';
+                });
+
+                document.querySelectorAll('button').forEach(button => {
+                    button.style.padding = '8px 16px';
+                    button.style.fontSize = '0.9em';
+                });
+            }
+        }
+
+        // 页面加载完成后优化移动体验
+        window.addEventListener('load', optimizeForMobile);
+        window.addEventListener('resize', optimizeForMobile);
+
+        // 如果用户返回时恢复之前的选择
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                // 恢复选中状态
+                Object.keys(userAnswers).forEach(question => {
+                    const answer = userAnswers[question];
+                    const optionEl = document.querySelector(`.question-container[data-question="${question}"] .option[data-value="${answer}"]`);
+                    if (optionEl) {
+                        optionEl.classList.add('selected');
+                        document.getElementById(`nextBtn${question}`).disabled = false;
+                    }
+                });
+            }
+        }); 
+    </script>
+</body>
+
+</html>
