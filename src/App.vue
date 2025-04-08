@@ -12,6 +12,7 @@
       <li><a href="/frontend-implementation.html">工位查询(带仿真)</a></li>
       <li><a href="/drama_index.html">AI Agent 内容</a></li>
       <li><a href="/test_duiba.html">iframe 测试</a></li>
+      <li><a href="/reading-style-quiz-page">读书风格测试</a></li>
     </nav>
 
     <!-- 按钮，点击触发方法 -->
