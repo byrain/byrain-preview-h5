@@ -13,6 +13,7 @@
       <li><a href="/drama_index.html">AI Agent 内容</a></li>
       <li><a href="/test_duiba.html">iframe 测试</a></li>
       <li><a href="/reading-style-quiz-page.html">读书风格测试</a></li>
+      <li><a href="/deeplink-test.html">拉端测试</a></li>
     </nav>
 
     <!-- 按钮，点击触发方法 -->

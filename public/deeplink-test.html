@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拉端测试页面</title>
+    <style>
+        .container {
+            padding: 20px;
+            max-width: 600px;
+            margin: 50px auto;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #urlInput {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #launchBtn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="input-group">
+            <input type="url" id="urlInput" placeholder="请输入要跳转的URL（例如：https://www.baidu.com）" required>
+            <button id="launchBtn">拉端</button>
+        </div>
+    </div>
+    <!-- 新增全屏选择 -->
+    <div class="fullscreen-option">
+        <input type="checkbox" id="fullscreenCheckbox" checked>
+        <label for="fullscreenCheckbox">全屏展示</label>
+    </div>
+    <script>
+        document.getElementById('launchBtn').addEventListener('click', function () {
+            const input = document.getElementById('urlInput');
+            // 获取全屏状态
+            const isFullscreen = document.getElementById('fullscreenCheckbox').checked;
+
+            if (input.value) {
+                const encodedUrl = encodeURIComponent(input.value);
+                // 根据全屏状态动态生成scheme
+                const schemeUrl = `cctvvideo://cctv.com/H5InteractActivity?${isFullscreen ? 'style=fullScreen&' : ''}url=${encodedUrl}`;
+
+                const link = document.createElement('a');
+                link.href = schemeUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                alert('请输入要跳转的URL');
+            }
+        });
+    </script>
+</body>
+
+</html>
