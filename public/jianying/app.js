@@ -77,7 +77,7 @@ function extractCaptions(decoded) {
     );
 }
 
-/* ==== 字幕切割优化版 ==== */
+/* ==== 字幕切割（避免引号内断句 + 短尾修正） ==== */
 function chunkByChars(text, maxChars = 14) {
     const SEP_RE = /[，。！？；：、,\.!\?;:\s]|…{1,2}|—{1,2}/; // 软断点
     const TAIL_2_RE = /(起来|下来|上去|进去|出来|回来)$/;
@@ -85,16 +85,10 @@ function chunkByChars(text, maxChars = 14) {
     const TOL = 6;
 
     const PAIRS = [
-        { open: '“', close: '”' },
-        { open: '‘', close: '’' },
-        { open: '"', close: '"' },   // 对称双引号
-        { open: "'", close: "'" },   // 对称单引号（关键！）
-        { open: '《', close: '》' },
-        { open: '（', close: '）' },
-        { open: '(', close: ')' },
-        { open: '【', close: '】' },
-        { open: '[', close: ']' },
-        { open: '{', close: '}' }
+        { open: '“', close: '”' }, { open: '‘', close: '’' },
+        { open: '"', close: '"' }, { open: "'", close: "'" },
+        { open: '《', close: '》' }, { open: '（', close: '）' }, { open: '(', close: ')' },
+        { open: '【', close: '】' }, { open: '[', close: ']' }, { open: '{', close: '}' }
     ];
 
     const strLen = s => [...(s ?? '')].length;
@@ -152,14 +146,13 @@ function chunkByChars(text, maxChars = 14) {
                 const forwardOk = (forward + 1) <= Math.min(arr.length, maxChars + TOL);
 
                 if (backOk && forwardOk) {
-                    // 选离目标切点更近的一个边界：开引号前 or 闭引号后
+                    // 选离目标切点更近的边界：开引号前 / 闭引号后
                     cut = (cut - back <= (forward + 1) - cut) ? back : (forward + 1);
                 } else if (backOk) {
                     cut = back;
                 } else if (forwardOk) {
                     cut = forward + 1;
                 } else {
-                    // 两边都不太合适时，尽量靠近闭合端
                     cut = (forward !== -1 && (forward + 1) - maxChars <= TOL) ? (forward + 1) : (back >= 0 ? back : cut);
                 }
 
@@ -168,7 +161,7 @@ function chunkByChars(text, maxChars = 14) {
             }
         }
 
-        // 3) 超限回缩：left 太长则回退到近端标点或顺延 ≤ TOL
+        // 3) 超限回缩
         if ([...left].length > (maxChars + TOL)) {
             const larr = splitToArr(left);
             let backTo = -1;
@@ -191,7 +184,7 @@ function chunkByChars(text, maxChars = 14) {
             }
         }
 
-        // 4) 挂尾字修正（函数词回拨）
+        // 4) 挂尾字修正
         if (left && right) {
             const larr = splitToArr(left);
             if (/[^\s]/.test(left)) {
@@ -205,14 +198,13 @@ function chunkByChars(text, maxChars = 14) {
             }
         }
 
-        // 5) 短尾修正：避免右侧只剩 1–2 个字符
-        const rlen = strLen(right);
+        // 5) 短尾修正（避免右侧只剩 1–2 个字符）
+        const rlen = [...right].length;
         if (rlen > 0 && rlen <= 2) {
             const larr = splitToArr(left);
             let pull = Math.min(2, larr.length);
-            // 避免把开引号拽到右侧
             const OPEN_SET = new Set(PAIRS.map(p => p.open));
-            if (pull > 0 && OPEN_SET.has(larr[larr.length - 1])) pull -= 1;
+            if (pull > 0 && OPEN_SET.has(larr[larr.length - 1])) pull -= 1; // 不要把开引号拉到右边
             if (pull > 0) {
                 right = larr.slice(-pull).join('') + right;
                 left = larr.slice(0, -pull).join('');
@@ -228,9 +220,10 @@ function chunkByChars(text, maxChars = 14) {
     return chunks;
 }
 
+/* ==== 文本块生产（去掉逗号/句号，字体+字间距在文本素材里设置） ==== */
 function splitCaptionsToTextItems(captions, audioDurationsUs, { maxChars = 14 } = {}) {
-    // 仅移除中英文逗号/句号；如需扩大禁用标点，后续可扩展这个正则
-    const stripPunct = s => String(s || '').replace(/[，,。\.、；;]/g, '');
+    // 把 逗号/句号/顿号 → 空格；可按需扩展
+    const punctToSpace = s => String(s || '').replace(/[，,。\.、]/g, ' ');
 
     const items = [];
     const U = x => (typeof x === 'number' && isFinite(x) && x > 0) ? Math.round(x) : 0;
@@ -241,30 +234,32 @@ function splitCaptionsToTextItems(captions, audioDurationsUs, { maxChars = 14 } 
         const text = raw.replace(/[“”]/g, '"').replace(/[‘’]/g, "'").trim();
         if (!text) { items.push({ text: ' ', duration: totalUs }); continue; }
 
+        // 保持原有切分逻辑（仍用标点做句读），之后再做替换为空格
         let sentences = text.split(/[，。！？!?:：；,…]+/).map(s => s.trim()).filter(Boolean);
         if (!sentences.length) sentences = [text];
 
-        // 先用切分算法得到块，再统一剔除逗号/句号并规整空白
         const allChunks = sentences.flatMap(s => chunkByChars(s, maxChars));
         const chunks = allChunks.map(c => {
-            const cleaned = stripPunct(c).replace(/\s+/g, ' ').trim();
+            // 标点→空格，并合并连续空格
+            const cleaned = punctToSpace(c).replace(/\s+/g, ' ').trim();
             return cleaned.length ? cleaned : ' ';
         });
 
-        // 按“净字符数”重新分配每块时长，避免把时长分给被删除的标点
+        // 用“净字符数”分配时长
         const lens = chunks.map(s => [...s].length);
         const sumLen = lens.reduce((a, b) => a + b, 0) || 1;
 
         let acc = 0;
         for (let j = 0; j < chunks.length; j++) {
             let d = Math.round(totalUs * (lens[j] / sumLen));
-            if (j === chunks.length - 1) d = totalUs - acc; // 收尾校正
+            if (j === chunks.length - 1) d = totalUs - acc;
             acc += d;
             items.push({ text: chunks[j], duration: U(d) });
         }
     }
     return items;
 }
+
 
 /* ==== download & duration ==== */
 async function fetchAsBlob(url) {
@@ -289,8 +284,10 @@ function getAudioDurationFromBlob(blob) {
 
 /* ==== UI refs ==== */
 const pickBtn = document.getElementById('pickJY');
-const resetBtn = document.getElementById('resetAll');
+// const resetBtn = document.getElementById('resetAll');
 const pathView = document.getElementById('jyPathDisplay');
+const hintNotSel = document.getElementById('jyHintNotSelected');
+const hintSel = document.getElementById('jyHintSelected');
 
 const encodedInput = document.getElementById('encodedInput');
 const secretKey = document.getElementById('secretKey');
@@ -312,22 +309,37 @@ const imgModal = document.getElementById('imgModal');
 const imgPreview = document.getElementById('imgPreview');
 imgModal.addEventListener('click', () => imgModal.classList.remove('open'));
 
-/* ==== directory ==== */
+/* ==== directory & stateful UI ==== */
 let dirHandle = null;
+
+function updateDirUI() {
+    const selected = !!dirHandle;
+    if (selected) {
+        pathView.textContent = `（已选择）${dirHandle.name}`;
+        pathView.classList.add('selected');
+        hintSel.classList.remove('hidden');
+        hintNotSel.classList.add('hidden');
+        pickBtn.classList.add('ghost');
+        pickBtn.textContent = '重新选择剪映目录';
+    } else {
+        pathView.textContent = '尚未选择';
+        pathView.classList.remove('selected');
+        hintSel.classList.add('hidden');
+        hintNotSel.classList.remove('hidden');
+        pickBtn.classList.remove('ghost');
+        pickBtn.textContent = '选择剪映目录';
+    }
+}
+
 async function initHandle() {
     try {
         const stored = await idbGet(HANDLE_KEY);
         if (stored) {
             dirHandle = stored;
             await verifyPermission(dirHandle, true);
-            updatePathDisplay();
-        } else {
-            updatePathDisplay();
         }
-    } catch (e) { console.warn(e) }
-}
-function updatePathDisplay() {
-    pathView.textContent = dirHandle ? `（已选择）${dirHandle.name}` : '尚未选择';
+    } catch (e) { console.warn(e); }
+    updateDirUI();
 }
 initHandle();
 
@@ -335,12 +347,13 @@ pickBtn.addEventListener('click', async () => {
     try {
         const h = await window.showDirectoryPicker({ id: 'jianying-root' });
         if (!(await verifyPermission(h, true))) { alert('需要写入权限'); return; }
-        dirHandle = h; await idbSet(HANDLE_KEY, h); updatePathDisplay();
+        dirHandle = h; await idbSet(HANDLE_KEY, h);
+        updateDirUI();
     } catch (e) { if (e?.name === 'AbortError') return; alert('选择目录失败：' + (e.message || e)); }
 });
-resetBtn.addEventListener('click', async () => {
-    await idbSet(HANDLE_KEY, undefined); dirHandle = null; updatePathDisplay(); alert('已清除记忆，请重新选择剪映目录。');
-});
+// resetBtn.addEventListener('click', async () => {
+//     await idbSet(HANDLE_KEY, undefined); dirHandle = null; updateDirUI(); alert('已清除记忆，请重新选择剪映目录。');
+// });
 
 /* ==== table row ==== */
 function addFileRow({ type, name, href, durationSec }) {
@@ -369,16 +382,14 @@ function addFileRow({ type, name, href, durationSec }) {
 }
 
 /* ==== Jianying builders ==== */
-
-// 文本入/出场动画（保持不变）
+// 文本入/出场动画
 const TEXT_ANIM = {
     IN: { name: '渐显', id: '1644304', resource_id: '6724916044072227332' },
     OUT: { name: '渐隐', id: '1644600', resource_id: '6724919382104871427' }
 };
-// 文本出场动画时长（μs）
 const TEXT_OUT_FADE_US = 300000;
 
-// 你提供的“免费入场动画”映射 + 默认时长（μs）
+// 免费入场动画映射 + 默认时长（μs）
 const ANIM_MAP = {
     "缩小": { id: "624755", resource_id: "6798332584276267527", dur_us: 500000 },
     "渐显": { id: "624705", resource_id: "6798320778182922760", dur_us: 500000 },
@@ -418,7 +429,7 @@ const ANIM_MAP = {
     "动感缩小": { id: "431658", resource_id: "6740868384637850120", dur_us: 500000 },
     "轻微放大": { id: "629085", resource_id: "6800268825611735559", dur_us: 500000 }
 };
-// 动画轮换列表：只使用存在于映射中的键
+// 动画轮换列表
 const animNames = Object.keys(ANIM_MAP);
 const DEFAULT_ANIM_DUR = 500000; // 0.5s 兜底
 
@@ -511,7 +522,7 @@ function buildDraftInfo({ width, height, fps, totalUs, audioDurationsUs, imageCo
     };
     speeds.push({ id: bgSeg.extra_material_refs[0], curve_speed: null, mode: 0, speed: 1.0, type: "speed" });
 
-    // 图片段（入场动画，使用 ANIM_MAP + dur_us）
+    // 图片段（入场动画）
     const videoSegments = []; let vStart = 0;
     for (let i = 0; i < imageCount; i++) {
         const dur = audioDurationsUs[i] ?? 0;
@@ -542,14 +553,16 @@ function buildDraftInfo({ width, height, fps, totalUs, audioDurationsUs, imageCo
         vStart += dur;
     }
 
-    // 文本材料
+    // 文本材料（字体 & 字间距）
     const textMaterials = textItems.map(it => {
         const t = (typeof it?.text === 'string' && it.text.trim()) ? it.text : ' ';
         return {
             id: randHex(16),
             content: JSON.stringify(makeTextContentObject(t)),
             text: t,
-            typesetting: 0, alignment: 0, letter_spacing: 0.1, line_spacing: 0.02, line_feed: 1,
+            typesetting: 0, alignment: 0,
+            letter_spacing: 0.1,      // ← 字间距
+            line_spacing: 0.02, line_feed: 1,
             line_max_width: 0.86, force_apply_line_max_width: true,
             check_flag: 15, type: "text"
         };
@@ -616,8 +629,8 @@ function buildDraftInfo({ width, height, fps, totalUs, audioDurationsUs, imageCo
 
 /* ==== core run ==== */
 startBtn.addEventListener('click', async () => {
-    document.getElementById('filesCard').classList.remove('hidden');
-    document.getElementById('resultCard').classList.remove('hidden');
+    filesCard.classList.remove('hidden');
+    resultCard.classList.remove('hidden');
 
     errorBox.textContent = '';
     runStatus.textContent = '处理中…';
@@ -626,7 +639,7 @@ startBtn.addEventListener('click', async () => {
     resultSummary.textContent = '处理中…';
 
     try {
-        if (!dirHandle) throw new Error('请先选择剪映目录');
+        if (!dirHandle) throw new Error('请先选择剪映目录（点击页面顶部的“选择剪映目录”按钮并授权写入）');
         if (!(await verifyPermission(dirHandle, true))) throw new Error('没有对剪映目录的写入权限');
         const encoded = (encodedInput.value || '').trim();
         const key = (secretKey.value || '').trim();
@@ -634,10 +647,6 @@ startBtn.addEventListener('click', async () => {
         if (!key) throw new Error('请输入解密密钥');
 
         const decoded = await secureDecode(encoded, key);
-        // console.log('[decoded keys]', Object.keys(decoded || {}));
-        // console.log('[cap_list type]', typeof (decoded?.cap_list));
-        // console.log('[caps sample]', extractCaptions(decoded).slice(0, 3));
-
         const audio_list_raw = typeof decoded.audio_list === 'string' ? JSON.parse(decoded.audio_list) : decoded.audio_list || [];
         const image_list_raw = typeof decoded.image_list === 'string' ? JSON.parse(decoded.image_list) : decoded.image_list || [];
         const bg_raw = typeof decoded.bg_image === 'string' ? JSON.parse(decoded.bg_image) : decoded.bg_image;
