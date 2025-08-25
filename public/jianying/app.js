@@ -309,6 +309,13 @@ const imgModal = document.getElementById('imgModal');
 const imgPreview = document.getElementById('imgPreview');
 imgModal.addEventListener('click', () => imgModal.classList.remove('open'));
 
+/* ==== start button disabled when no secret ==== */
+function updateStartBtnDisabled() {
+    startBtn.disabled = !(secretKey.value.trim().length > 0);
+}
+updateStartBtnDisabled();
+secretKey.addEventListener('input', updateStartBtnDisabled);
+
 /* ==== directory & stateful UI ==== */
 let dirHandle = null;
 
@@ -734,5 +741,32 @@ startBtn.addEventListener('click', async () => {
         console.error(e);
         runStatus.textContent = '出错';
         errorBox.textContent = '❌ ' + (e?.message || e);
+    } finally {
+        updateStartBtnDisabled(); // 根据密钥是否为空恢复状态
     }
+});
+
+/* ==== Help image (draft path guide) ==== */
+const HELP_IMG_SRC = './assets/jy-draft.png'; // 你的指引图路径
+// const openHelpBtn = document.getElementById('openHelp');
+const openHelpLink = document.getElementById('openHelpLink');  // 新的“超链接”按钮
+const helpModal = document.getElementById('helpModal');
+const helpImage = document.getElementById('helpImage');
+
+function openHelpModal() {
+    if (!helpImage.src) helpImage.src = HELP_IMG_SRC; // 首次打开再加载
+    helpModal.classList.add('open');
+}
+// openHelpBtn && openHelpBtn.addEventListener('click', openHelpModal);
+openHelpLink && openHelpLink.addEventListener('click', openHelpModal);
+
+// 关闭逻辑（你若已加过可忽略）
+helpModal?.addEventListener('click', (e) => {
+    if (e.target === helpModal || e.target.classList.contains('modal-close')) {
+        helpModal.classList.remove('open');
+    }
+});
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') document.querySelectorAll('.modal.open')
+        .forEach(m => m.classList.remove('open'));
 });
