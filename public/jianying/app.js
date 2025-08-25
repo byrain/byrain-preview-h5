@@ -654,12 +654,14 @@ startBtn.addEventListener('click', async () => {
         if (!key) throw new Error('请输入解密密钥');
 
         const decoded = await secureDecode(encoded, key);
+        console.log("解码后内容为：", decoded)
         const audio_list_raw = typeof decoded.audio_list === 'string' ? JSON.parse(decoded.audio_list) : decoded.audio_list || [];
         const image_list_raw = typeof decoded.image_list === 'string' ? JSON.parse(decoded.image_list) : decoded.image_list || [];
         const bg_raw = typeof decoded.bg_image === 'string' ? JSON.parse(decoded.bg_image) : decoded.bg_image;
         const bg_url = Array.isArray(bg_raw) ? (bg_raw[0]?.image_url || bg_raw[0] || '') : (bg_raw?.image_url || bg_raw || decoded.bg_image || '');
 
         const [wStr, hStr] = (aspectSel.value || '1080x1920').split('x');
+        // const [wStr, hStr] = (aspectSel.value || '1080x1920').split('x');
         const WIDTH = parseInt(wStr, 10), HEIGHT = parseInt(hStr, 10), fps = 30;
 
         const stamp = tsNow(); tsOutput.value = stamp;
