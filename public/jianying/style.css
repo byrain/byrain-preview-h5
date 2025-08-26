@@ -340,3 +340,25 @@ td.status {
 .field:has(#jyPathDisplay)+.spacer {
     display: none;
 }
+
+.type-preview {
+    margin-top: 8px;
+}
+
+.type-preview img {
+    display: block;
+    width: 100%;
+    max-width: 460px;
+    /* 你也可调到 360~560 */
+    height: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #f8fafc;
+    cursor: zoom-in;
+    /* 提示可放大 */
+}
+
+.type-preview img.broken {
+    opacity: .5;
+    cursor: not-allowed;
+}

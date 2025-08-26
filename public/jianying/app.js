@@ -291,8 +291,7 @@ const hintSel = document.getElementById('jyHintSelected');
 
 const encodedInput = document.getElementById('encodedInput');
 const secretKey = document.getElementById('secretKey');
-const themeSel = document.getElementById('theme');
-const aspectSel = document.getElementById('aspect');
+const typeSel = document.getElementById('typeSelect');
 const maxCharsInput = document.getElementById('maxChars');
 
 const startBtn = document.getElementById('startBtn');
@@ -389,6 +388,24 @@ function addFileRow({ type, name, href, durationSec }) {
 }
 
 /* ==== Jianying builders ==== */
+/* ==== 类型预设（竖屏/横屏） ==== */
+const TYPE_PRESETS = {
+    vertical_story: {
+        label: '竖屏故事',
+        width: 1080, height: 1920,
+        imageClip: { scale_x: 1, scale_y: 1, transform_y: 0 },   // 图片位置
+        textStyle: { color: [1, 1, 1], size: 10 },                         // 字幕样式（白字）
+        textClip: { transform_y: -0.4 }                                  // 字幕位置
+    },
+    horizontal_story: {
+        label: '横屏故事',
+        width: 1920, height: 1080,
+        imageClip: { scale_x: 0.6, scale_y: 0.6, transform_y: 0.2 },     // 图片位置
+        textStyle: { color: [1, 1, 1], size: 10 },                          // 字幕样式（白字）
+        textClip: { transform_y: -0.8 }                                  // 字幕位置
+    }
+};
+
 // 文本入/出场动画
 const TEXT_ANIM = {
     IN: { name: '渐显', id: '1644304', resource_id: '6724916044072227332' },
@@ -454,12 +471,15 @@ function buildDraftMetaInfo() {
     };
 }
 
-function makeTextContentObject(txt) {
+function makeTextContentObject(txt, style = {}) {
     const len = [...txt].length || 1;
+    const color = Array.isArray(style.color) ? style.color : [1, 1, 1];
+    const size = Number(style.size) || 10;
+
     return {
         styles: [{
-            fill: { alpha: 1.0, content: { render_type: "solid", solid: { alpha: 1.0, color: [1, 1, 1] } } },
-            range: [0, len], size: 10, bold: false, italic: false, underline: false,
+            fill: { alpha: 1.0, content: { render_type: "solid", solid: { alpha: 1.0, color } } },
+            range: [0, len], size, bold: false, italic: false, underline: false,
             strokes: [{ content: { solid: { alpha: 1.0, color: [0, 0, 0] } }, width: 0.08 }],
             font: { id: "6740435892441190919", path: "c:/新青年.ttf" } // 新青年体
         }],
@@ -467,7 +487,7 @@ function makeTextContentObject(txt) {
     };
 }
 
-function buildDraftInfo({ width, height, fps, totalUs, audioDurationsUs, imageCount, textItems }) {
+function buildDraftInfo({ width, height, fps, totalUs, audioDurationsUs, imageCount, textItems, preset }) {
     const draftId = (randHex(8) + '-' + randHex(4) + '-' + randHex(4) + '-' + randHex(4) + '-' + randHex(12)).toUpperCase();
     const speeds = [], audio_fades = [], material_animations = [];
 
@@ -530,6 +550,9 @@ function buildDraftInfo({ width, height, fps, totalUs, audioDurationsUs, imageCo
     speeds.push({ id: bgSeg.extra_material_refs[0], curve_speed: null, mode: 0, speed: 1.0, type: "speed" });
 
     // 图片段（入场动画）
+    const imgScaleX = (preset?.imageClip?.scale_x ?? 1);
+    const imgScaleY = (preset?.imageClip?.scale_y ?? 1);
+    const imgTransY = (preset?.imageClip?.transform_y ?? 0);
     const videoSegments = []; let vStart = 0;
     for (let i = 0; i < imageCount; i++) {
         const dur = audioDurationsUs[i] ?? 0;
@@ -543,8 +566,8 @@ function buildDraftInfo({ width, height, fps, totalUs, audioDurationsUs, imageCo
             id: animId, type: "sticker_animation", multi_language_current: "none",
             animations: [{
                 anim_adjust_params: null, platform: "all", panel: "video", material_type: "video",
-                name: pick, id: mapped.id, type: "in", resource_id: mapped.resource_id,
-                start: 0, duration: Number.isFinite(mapped.dur_us) ? mapped.dur_us : DEFAULT_ANIM_DUR
+                name: pick, id: mapped.id, type: "in", resource_id: mapped.resource_id, start: 0,
+                duration: Number.isFinite(mapped.dur_us) ? mapped.dur_us : DEFAULT_ANIM_DUR
             }]
         });
 
@@ -552,9 +575,13 @@ function buildDraftInfo({ width, height, fps, totalUs, audioDurationsUs, imageCo
         videoSegments.push({
             enable_adjust: true, enable_color_correct_adjust: false, enable_color_curves: true, enable_color_match_adjust: false, enable_color_wheels: true,
             enable_lut: true, enable_smart_color_adjust: false, last_nonzero_volume: 1.0, reverse: false, track_attribute: 0, track_render_index: 0, visible: true,
-            id: randHex(16), material_id: vm.id, target_timerange: { start: vStart, duration: dur }, common_keyframes: [], keyframe_refs: [],
+            id: randHex(16), material_id: vm.id,
+            target_timerange: { start: vStart, duration: dur }, common_keyframes: [], keyframe_refs: [],
             source_timerange: { start: 0, duration: dur }, speed: 1.0, volume: 1.0, extra_material_refs: [speedRef, animId],
-            clip: { alpha: 1, flip: { horizontal: false, vertical: false }, rotation: 0, scale: { x: 1, y: 1 }, transform: { x: 0, y: 0 } },
+            clip: {
+                alpha: 1, flip: { horizontal: false, vertical: false }, rotation: 0,
+                scale: { x: imgScaleX, y: imgScaleY }, transform: { x: 0, y: imgTransY }
+            },
             uniform_scale: { on: true, value: 1.0 }, hdr_settings: { intensity: 1.0, mode: 1, nits: 1000 }, render_index: 0
         });
         vStart += dur;
@@ -565,10 +592,10 @@ function buildDraftInfo({ width, height, fps, totalUs, audioDurationsUs, imageCo
         const t = (typeof it?.text === 'string' && it.text.trim()) ? it.text : ' ';
         return {
             id: randHex(16),
-            content: JSON.stringify(makeTextContentObject(t)),
+            content: JSON.stringify(makeTextContentObject(t, preset?.textStyle)),
             text: t,
             typesetting: 0, alignment: 0,
-            letter_spacing: 0.1,      // ← 字间距
+            letter_spacing: 0.1,
             line_spacing: 0.02, line_feed: 1,
             line_max_width: 0.86, force_apply_line_max_width: true,
             check_flag: 15, type: "text"
@@ -577,6 +604,7 @@ function buildDraftInfo({ width, height, fps, totalUs, audioDurationsUs, imageCo
 
     // 文本段（出场动画 0.3s 过渡）
     const textSegments = []; let tStart = 0;
+    const textY = (preset?.textClip?.transform_y ?? -0.36);
     for (let i = 0; i < textItems.length; i++) {
         const dur = Math.max(0, Number(textItems[i].duration) || 0);
         const animId = randHex(16);
@@ -593,7 +621,10 @@ function buildDraftInfo({ width, height, fps, totalUs, audioDurationsUs, imageCo
             id: randHex(16), material_id: textMaterials[i].id,
             target_timerange: { start: tStart, duration: dur }, common_keyframes: [], keyframe_refs: [], source_timerange: null,
             speed: 1.0, volume: 1.0, extra_material_refs: [animId],
-            clip: { alpha: 1.0, flip: { horizontal: false, vertical: false }, rotation: 0.0, scale: { x: 1.0, y: 1.0 }, transform: { x: 0.0, y: -0.36 } },
+            clip: {
+                alpha: 1.0, flip: { horizontal: false, vertical: false }, rotation: 0.0,
+                scale: { x: 1.0, y: 1.0 }, transform: { x: 0.0, y: textY }
+            },
             uniform_scale: { on: true, value: 1.0 }, render_index: 15000
         });
         tStart += dur;
@@ -660,9 +691,11 @@ startBtn.addEventListener('click', async () => {
         const bg_raw = typeof decoded.bg_image === 'string' ? JSON.parse(decoded.bg_image) : decoded.bg_image;
         const bg_url = Array.isArray(bg_raw) ? (bg_raw[0]?.image_url || bg_raw[0] || '') : (bg_raw?.image_url || bg_raw || decoded.bg_image || '');
 
-        const [wStr, hStr] = (aspectSel.value || '1080x1920').split('x');
-        // const [wStr, hStr] = (aspectSel.value || '1080x1920').split('x');
-        const WIDTH = parseInt(wStr, 10), HEIGHT = parseInt(hStr, 10), fps = 30;
+        // 设置画幅
+        const preset = TYPE_PRESETS[typeSel?.value] || TYPE_PRESETS.vertical_story;
+        const WIDTH = preset.width;
+        const HEIGHT = preset.height;
+        const fps = 30;
 
         const stamp = tsNow(); tsOutput.value = stamp;
         const draftRoot = await ensureDir(dirHandle, stamp);
@@ -731,14 +764,16 @@ startBtn.addEventListener('click', async () => {
         const info = buildDraftInfo({
             width: WIDTH, height: HEIGHT, fps, totalUs,
             audioDurationsUs, imageCount: image_list_raw.length,
-            textItems
+            textItems,
+            preset
         });
 
         await writeFile(draftRoot, 'draft_meta_info.json', new Blob([JSON.stringify(meta, null, 2)], { type: 'application/json' }));
         await writeFile(draftRoot, 'draft_info.json', new Blob([JSON.stringify(info, null, 2)], { type: 'application/json' }));
 
         runStatus.textContent = '完成';
-        resultSummary.innerHTML = `已生成：<code>${stamp}</code><br/>总时长：<b>${totalSec.toFixed(3)}s</b>；音频：${audioDurationsSec.length} 个；图片：${image_list_raw.length} 张；画幅：${WIDTH}×${HEIGHT}；字幕片段：${textItems.length}（maxChars=${maxChars}）`;
+        resultSummary.innerHTML = `已生成：<code>${stamp}</code><br/>类型：<b>${preset.label}</b>；总时长：<b>${totalSec.toFixed(3)}s</b>；音频：${audioDurationsSec.length} 个；图片：${image_list_raw.length} 张；画幅：${WIDTH}×${HEIGHT}；字幕片段：${textItems.length}（maxChars=${maxChars}）`;
+
     } catch (e) {
         console.error(e);
         runStatus.textContent = '出错';
@@ -771,4 +806,43 @@ helpModal?.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') document.querySelectorAll('.modal.open')
         .forEach(m => m.classList.remove('open'));
+});
+
+/* ==== 类型预览图 ==== */
+const TYPE_PREVIEW_MAP = {
+    vertical_story: { src: './assets/shuping.png', alt: '竖屏故事预览' },
+    horizontal_story: { src: './assets/hengping.png', alt: '横屏故事预览' }
+};
+
+const typePreviewImg = document.getElementById('typePreviewImg');
+const typePreviewCap = document.getElementById('typePreviewCap');
+
+function updateTypePreview() {
+    const key = (typeSel?.value) || 'vertical_story';
+    const meta = TYPE_PREVIEW_MAP[key];
+    if (!typePreviewImg || !meta) return;
+
+    typePreviewImg.classList.remove('broken');
+    typePreviewImg.loading = 'lazy';
+    typePreviewImg.src = meta.src;
+    typePreviewImg.alt = meta.alt;
+    if (typePreviewCap) typePreviewCap.textContent = `预览：${(TYPE_PRESETS[key]?.label) || ''}`;
+}
+
+// 首次渲染 & 切换时更新
+typeSel?.addEventListener('change', updateTypePreview);
+updateTypePreview();
+
+// 加载失败时的兜底提示
+typePreviewImg?.addEventListener('error', () => {
+    typePreviewImg.classList.add('broken');
+    if (typePreviewCap) typePreviewCap.textContent = '未找到预览图（请检查路径或文件名）';
+});
+
+// 点击预览图放大（复用现有的图片 Modal）
+typePreviewImg?.addEventListener('click', () => {
+    if (!typePreviewImg.classList.contains('broken')) {
+        imgPreview.src = typePreviewImg.src;
+        imgModal.classList.add('open');
+    }
 });

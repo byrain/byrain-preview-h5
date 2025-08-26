@@ -70,7 +70,22 @@
           <input id="secretKey" type="password" placeholder="（必填）" required>
         </div>
 
-        <div class="block-gap grid2">
+        <div class="block-gap field" style="max-width:360px">
+          <label>类型</label>
+          <select id="typeSelect">
+            <option value="vertical_story">竖屏故事（1080×1920）</option>
+            <option value="horizontal_story">横屏故事（1920×1080）</option>
+          </select>
+          <!-- 类型预览 -->
+          <div class="type-preview">
+            <img id="typePreviewImg" alt="样式预览" />
+            <div id="typePreviewCap" class="muted">预览：竖屏故事</div>
+          </div>
+
+          <div class="muted">类型将自动设置画幅、图片位置与字幕样式/位置。</div>
+        </div>
+
+        <!-- <div class="block-gap grid2">
           <div class="field">
             <label>主题（暂未实现）</label>
             <select id="theme">
@@ -85,7 +100,7 @@
               <option value="1200x1600">1200 × 1600</option>
             </select>
           </div>
-        </div>
+        </div> -->
 
         <div class="block-gap field" style="max-width:340px">
           <label>字幕每片最大字数（建议 12–16）</label>
