@@ -47,11 +47,21 @@ async function secureDecode(encoded_str, secret) {
     let dot = -1; for (let i = 0; i < combined.length; i++) { if (combined[i] === 46) { dot = i; break; } }
     if (dot < 0) throw new Error('编码格式不正确：找不到分隔点');
     const sigPart = combined.slice(0, dot), jsonPart = combined.slice(dot + 1);
+
     const expectedHex = await hmacSha256Hex(secret, jsonPart);
     const sigHex = dec.decode(sigPart);
     if (sigHex !== expectedHex) throw new Error('签名验证失败');
+
     const jsonText = dec.decode(jsonPart);
-    return JSON.parse(jsonText);
+    const obj = JSON.parse(jsonText);
+
+    // ===== 仅此一处新逻辑：兼容多形态 image_list =====
+    try {
+        const urls = normalizeImageListShape(obj.image_list);
+        obj.image_list = JSON.stringify(urls);   // 保持老协议：下游仍 JSON.parse(decoded.image_list)
+    } catch { /* 忽略异常，保留原值 */ }
+
+    return obj;
 }
 
 /* ==== caption extraction ==== */
@@ -822,10 +832,17 @@ function updateTypePreview() {
     const meta = TYPE_PREVIEW_MAP[key];
     if (!typePreviewImg || !meta) return;
 
-    typePreviewImg.classList.remove('broken');
+    typePreviewImg.classList.remove('broken', 'portrait', 'landscape');
     typePreviewImg.loading = 'lazy';
     typePreviewImg.src = meta.src;
     typePreviewImg.alt = meta.alt;
+
+    // 加载完再根据天然宽高判定横/竖，打类名以触发对应CSS
+    typePreviewImg.onload = () => {
+        const isPortrait = typePreviewImg.naturalHeight > typePreviewImg.naturalWidth;
+        typePreviewImg.classList.add(isPortrait ? 'portrait' : 'landscape');
+    };
+
     if (typePreviewCap) typePreviewCap.textContent = `预览：${(TYPE_PRESETS[key]?.label) || ''}`;
 }
 
@@ -846,3 +863,33 @@ typePreviewImg?.addEventListener('click', () => {
         imgModal.classList.add('open');
     }
 });
+
+/* ==== image_list 形态兼容（解码端） ==== */
+// 将任意形态的 image_list 归一化为「字符串数组」
+function normalizeImageListShape(value) {
+    // 1) 先把字符串 JSON 解析成对象，否则直接用原值
+    let raw = value;
+    if (typeof raw === 'string') {
+        try { raw = JSON.parse(raw); } catch { raw = []; }
+    }
+
+    const out = [];
+    const push = (v) => { if (typeof v === 'string' && v.trim()) out.push(v.trim()); };
+
+    if (Array.isArray(raw)) {
+        for (const it of raw) {
+            if (!it) continue;
+            if (typeof it === 'string') {
+                push(it);
+            } else if (typeof it === 'object') {
+                // 兼容 { pics: [...] } / { image_url: "..." } / { url: "..." } / { uri: "..." }
+                if (Array.isArray(it.pics)) {
+                    for (const p of it.pics) push(p);
+                } else {
+                    for (const k of ['image_url', 'url', 'uri']) push(it[k]);
+                }
+            }
+        }
+    }
+    return out;
+}

@@ -345,17 +345,32 @@ td.status {
     margin-top: 8px;
 }
 
+/* 通用：不固定宽高，由类名控制 */
 .type-preview img {
     display: block;
-    width: 100%;
-    max-width: 460px;
-    /* 你也可调到 360~560 */
     height: auto;
     border: 1px solid var(--border);
     border-radius: 10px;
     background: #f8fafc;
     cursor: zoom-in;
-    /* 提示可放大 */
+}
+
+/* 横屏：宽度自适应容器（保持原效果） */
+#typePreviewImg.landscape {
+    width: 100%;
+    max-width: 560px;
+    /* 可按需 420~640 之间调整 */
+}
+
+/* 竖屏：按“高度优先”，避免显得过大 */
+#typePreviewImg.portrait {
+    width: auto;
+    /* 不再强制 100% 宽 */
+    max-width: 90%;
+    /* 仍给个上限，防超宽容器 */
+    height: clamp(260px, 48vh, 420px);
+    /* 关键：竖屏按高度限制 */
+    object-fit: contain;
 }
 
 .type-preview img.broken {
