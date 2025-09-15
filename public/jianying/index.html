@@ -114,6 +114,31 @@
         </div>
       </div>
     </div>
+    <!-- ②.5 图片选择（仅当存在多图项时显示） -->
+    <div id="imgChoiceCard" class="card block-gap-lg hidden">
+      <div class="card-h">②.5 图片选择（多图项）</div>
+      <div class="card-b" id="imgChoiceBody">
+        <!-- JS 渲染每组：已选缩略图 + 候选数 + 选择按钮 -->
+      </div>
+    </div>
+    <div class="toolbar block-gap">
+      <button id="imgChoiceContinue" class="btn primary" disabled>继续生成</button>
+    </div>
+
+    <!-- 多图选择 Modal -->
+    <div id="imgPickerModal" class="modal" role="dialog" aria-modal="true">
+      <div class="modal-inner picker">
+        <div class="row">
+          <div class="muted">选择图片 —— 第 <span id="pickerIndex">1</span> 组</div>
+          <button class="modal-close btn ghost right">关闭</button>
+        </div>
+        <div id="pickerThumbs" class="thumb-grid block-gap"></div>
+        <div class="toolbar block-gap">
+          <button id="pickerOk" class="btn primary">确定</button>
+          <button id="pickerCancel" class="btn">取消</button>
+        </div>
+      </div>
+    </div>
 
     <!-- ③ 文件状态 -->
     <div id="filesCard" class="card block-gap-lg hidden">

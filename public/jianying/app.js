@@ -23,6 +23,53 @@ function idbOpen() { return new Promise((res, rej) => { const r = indexedDB.open
 async function idbSet(k, v) { const db = await idbOpen(); return new Promise((res, rej) => { const tx = db.transaction(STORE, 'readwrite'); tx.objectStore(STORE).put(v, k); tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); }); }
 async function idbGet(k) { const db = await idbOpen(); return new Promise((res, rej) => { const tx = db.transaction(STORE, 'readonly'); const req = tx.objectStore(STORE).get(k); req.onsuccess = () => res(req.result); req.onerror = () => rej(req.error); }); }
 
+// 是否是非空数组（兼容字符串化 JSON）
+function hasNonEmptyArray(val) {
+    if (val == null) return false;
+    let v = val;
+    if (typeof v === 'string') {
+        try { v = JSON.parse(v); } catch { return false; }
+    }
+    return Array.isArray(v) && v.length > 0;
+}
+
+// 把 image_list（任意形态）拍平成字符串数组（兼容 {pics:[]}, {image_url}, {url}, {uri}）
+function normalizeImageListShape(value) {
+    let raw = value;
+    if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch { raw = []; } }
+    const out = [];
+    const push = (s) => { if (typeof s === 'string' && s.trim()) out.push(s.trim()); };
+
+    (Array.isArray(raw) ? raw : []).forEach(it => {
+        if (!it) return;
+        if (typeof it === 'string') { push(it); return; }
+        if (typeof it === 'object') {
+            if (Array.isArray(it.pics)) {
+                // 若你希望只取第一张，改成：const f = it.pics.find(x => typeof x==='string'&&x); push(f);
+                it.pics.forEach(push); // 这里“拍平所有”，稍后我们会在 image_group 分支只取每组第一张
+            } else {
+                for (const k of ['image_url', 'url', 'uri']) { push(it[k]); }
+            }
+        }
+    });
+    return out;
+}
+
+// 把 image_group 解析成二维数组：[[a,b],[c,d],...]
+function parseImageGroups(value) {
+    let raw = value;
+    if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch { raw = []; } }
+    const groups = [];
+    (Array.isArray(raw) ? raw : []).forEach(it => {
+        if (!it || typeof it !== 'object') return;
+        const pics = Array.isArray(it.pics) ? it.pics.filter(x => typeof x === 'string' && x.trim()) : [];
+        if (pics.length) groups.push(pics.slice(0, 4)); // ← 每组最多 4 张
+    });
+    return groups;
+}
+
+
+
 /* ==== FS helpers ==== */
 async function ensureDir(parent, name) { return await parent.getDirectoryHandle(name, { create: true }); }
 async function writeFile(dir, name, data) {
@@ -46,8 +93,8 @@ async function secureDecode(encoded_str, secret) {
     const combined = b64urlToBytes(encoded_str);
     let dot = -1; for (let i = 0; i < combined.length; i++) { if (combined[i] === 46) { dot = i; break; } }
     if (dot < 0) throw new Error('编码格式不正确：找不到分隔点');
-    const sigPart = combined.slice(0, dot), jsonPart = combined.slice(dot + 1);
 
+    const sigPart = combined.slice(0, dot), jsonPart = combined.slice(dot + 1);
     const expectedHex = await hmacSha256Hex(secret, jsonPart);
     const sigHex = dec.decode(sigPart);
     if (sigHex !== expectedHex) throw new Error('签名验证失败');
@@ -55,14 +102,61 @@ async function secureDecode(encoded_str, secret) {
     const jsonText = dec.decode(jsonPart);
     const obj = JSON.parse(jsonText);
 
-    // ===== 仅此一处新逻辑：兼容多形态 image_list =====
-    try {
+    // ====== 兼容：优先 image_list，其次 image_group ======
+    if (hasNonEmptyArray(obj.image_list)) {
+        // A) 有 image_list：归一化为“字符串化数组”（老协议）
         const urls = normalizeImageListShape(obj.image_list);
-        obj.image_list = JSON.stringify(urls);   // 保持老协议：下游仍 JSON.parse(decoded.image_list)
-    } catch { /* 忽略异常，保留原值 */ }
+        obj.image_list = JSON.stringify(urls);
+
+        // （可选）补充分组信息：每项当作单元素组，供你的多图 UI 使用
+        // obj.image_groups = JSON.stringify(urls.map(u => [u]));
+    } else if (hasNonEmptyArray(obj.image_group)) {
+        // B) 无 image_list、有 image_group：解析分组，并把“每组首图”填入 image_list（保持老协议不变）
+        const groups = parseImageGroups(obj.image_group);
+        const firsts = groups.map(g => g[0]).filter(Boolean);
+        obj.image_list = JSON.stringify(firsts);
+
+        // （可选）把完整分组也带上，便于前端做多图预览/选择
+        // obj.image_groups = JSON.stringify(groups);
+    } else {
+        // 两者都没有：保持为空数组
+        obj.image_list = JSON.stringify([]);
+        // obj.image_groups = JSON.stringify([]);
+    }
 
     return obj;
 }
+
+
+/* ==== 多形态 image_list → 分组结构 ==== */
+function parseImageGroups(value) {
+    let raw = value;
+    if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch { raw = []; } }
+    const groups = [];
+    const push1 = (u) => { if (typeof u === 'string' && u.trim()) return u.trim(); return null; };
+
+    (Array.isArray(raw) ? raw : []).forEach(it => {
+        if (!it) return;
+        if (typeof it === 'string') {
+            const v = push1(it); if (v) groups.push([v]);
+        } else if (typeof it === 'object') {
+            if (Array.isArray(it.pics)) {
+                const arr = it.pics.map(push1).filter(Boolean);
+                if (arr.length) groups.push(arr);
+            } else {
+                for (const k of ['image_url', 'url', 'uri']) {
+                    const v = push1(it[k]); if (v) { groups.push([v]); break; }
+                }
+            }
+        }
+    });
+    return groups;
+}
+
+/* ==== 选择状态 & 预览缓存 ==== */
+let imageGroups = [];             // [ [url,url...], [url], ... ]
+let selectedByGroup = [];         // [ chosenUrl or null ]
+const imgPreviewCache = new Map();// url -> Blob（用于复用写盘）
 
 /* ==== caption extraction ==== */
 function extractCaptions(decoded) {
@@ -317,6 +411,84 @@ const resultSummary = document.getElementById('resultSummary');
 const imgModal = document.getElementById('imgModal');
 const imgPreview = document.getElementById('imgPreview');
 imgModal.addEventListener('click', () => imgModal.classList.remove('open'));
+
+const imgChoiceCard = document.getElementById('imgChoiceCard');
+const imgChoiceBody = document.getElementById('imgChoiceBody');
+const imgChoiceGoBtn = document.getElementById('imgChoiceContinue');
+
+const imgPickerModal = document.getElementById('imgPickerModal');
+const pickerThumbs = document.getElementById('pickerThumbs');
+const pickerIndexEl = document.getElementById('pickerIndex');
+const pickerOk = document.getElementById('pickerOk');
+const pickerCancel = document.getElementById('pickerCancel');
+
+/* 打开/关闭选择弹窗 */
+function openPicker(groupIndex) {
+    pickerIndexEl.textContent = String(groupIndex + 1);
+    pickerThumbs.innerHTML = '';
+    const arr = imageGroups[groupIndex] || [];
+    const current = selectedByGroup[groupIndex] || arr[0];
+
+    arr.forEach((url, j) => {
+        const img = document.createElement('img');
+        img.src = url;
+        img.title = url;
+        img.className = (url === current) ? 'active' : '';
+        img.addEventListener('click', () => {
+            pickerThumbs.querySelectorAll('img').forEach(el => el.classList.remove('active'));
+            img.classList.add('active');
+            pickerThumbs.dataset.selected = String(j);
+        });
+        pickerThumbs.appendChild(img);
+    });
+    pickerThumbs.dataset.selected = String(Math.max(0, (imageGroups[groupIndex] || []).indexOf(current)));
+    imgPickerModal.classList.add('open');
+}
+function closePicker() { imgPickerModal.classList.remove('open'); }
+imgPickerModal?.addEventListener('click', (e) => {
+    if (e.target === imgPickerModal || e.target.classList.contains('modal-close')) closePicker();
+});
+pickerCancel?.addEventListener('click', closePicker);
+pickerOk?.addEventListener('click', () => {
+    const gi = Number(pickerIndexEl.textContent) - 1;
+    const si = Number(pickerThumbs.dataset.selected || 0);
+    selectedByGroup[gi] = imageGroups[gi][si];
+    renderImageChoice(); closePicker();
+});
+
+/* 渲染“图片选择”卡片 */
+function renderImageChoice() {
+    if (!imageGroups.length) { imgChoiceCard.classList.add('hidden'); return; }
+    imgChoiceCard.classList.remove('hidden');
+    imgChoiceBody.innerHTML = '';
+    imageGroups.forEach((arr, i) => {
+        const chosen = selectedByGroup[i] || arr[0];
+        const row = document.createElement('div');
+        row.className = 'row tight block-gap';
+        row.innerHTML = `
+      <div class="muted" style="width:80px">图片 ${i + 1}</div>
+      <img class="preview-img" src="${chosen}" alt="已选" />
+      <div class="muted">候选 ${arr.length} 张</div>
+      <button class="btn small" data-pick="${i}">选择</button>
+    `;
+        imgChoiceBody.appendChild(row);
+    });
+}
+
+/* 代理“选择”按钮点击 */
+imgChoiceBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-pick]');
+    if (btn) openPicker(parseInt(btn.dataset.pick, 10));
+});
+
+/* 预览下载：缓存 Blob（不写磁盘） */
+async function fetchAsBlobCached(url) {
+    if (imgPreviewCache.has(url)) return imgPreviewCache.get(url);
+    const blob = await fetchAsBlob(url);
+    imgPreviewCache.set(url, blob);
+    return blob;
+}
+
 
 /* ==== start button disabled when no secret ==== */
 function updateStartBtnDisabled() {
@@ -696,6 +868,22 @@ startBtn.addEventListener('click', async () => {
 
         const decoded = await secureDecode(encoded, key);
         console.log("解码后内容为：", decoded)
+        // === 解析 image_list 分组并准备选择 UI（不改变主流程） ===
+        const raw_img_list = (typeof decoded.image_list === 'string')
+            ? JSON.parse(decoded.image_list) : (decoded.image_list || []);
+        imageGroups = parseImageGroups(raw_img_list);                // [ [u1,u2], [u3], ... ]
+        if (!imageGroups.length) imageGroups = [];                   // 兼容无图
+        selectedByGroup = imageGroups.map(arr => arr[0] || null);    // 默认选第一张
+        renderImageChoice();
+
+        // 可选：预加载可见候选的 Blob 用于更流畅的最终写盘（不写磁盘）
+
+        for (const arr of imageGroups) {
+            for (const u of arr) { try { await fetchAsBlobCached(u); } catch { } }
+        }
+
+
+
         const audio_list_raw = typeof decoded.audio_list === 'string' ? JSON.parse(decoded.audio_list) : decoded.audio_list || [];
         const image_list_raw = typeof decoded.image_list === 'string' ? JSON.parse(decoded.image_list) : decoded.image_list || [];
         const bg_raw = typeof decoded.bg_image === 'string' ? JSON.parse(decoded.bg_image) : decoded.bg_image;
@@ -732,12 +920,42 @@ startBtn.addEventListener('click', async () => {
             }
         }
 
-        for (let i = 0; i < image_list_raw.length; i++) {
-            const url = image_list_raw[i];
+        // 解析 image_group（若存在）并准备候选
+        let groupsRaw = decoded.image_groups ?? decoded.image_group; // 你可能在 secureDecode 里已标准到 image_groups
+        imageGroups = parseImageGroups(groupsRaw);                    // 每组最多 4 张
+        selectedByGroup = imageGroups.map(arr => arr[0] || null);
+
+        // 预取候选到内存（不落盘）
+        if (imageGroups.length) {
+            renderImageChoice();
+            // 预缓存可见候选（并行拉取，加快选择预览）
+            const preload = [];
+            imageGroups.forEach(arr => arr.forEach(u => preload.push(fetchAsBlobCached(u).catch(() => null))));
+            await Promise.all(preload);
+
+            // 等用户选完，再进入写盘与后续
+            await waitUserSelection();
+        }
+
+        // effectiveImages：最终要落盘的列表
+        let effectiveImages;
+        if (imageGroups.length) {
+            effectiveImages = imageGroups.map((arr, i) => selectedByGroup[i] || arr[0] || '');
+        } else {
+            // 没有 image_group：保持现有逻辑（字符串数组）
+            const image_list_raw = typeof decoded.image_list === 'string'
+                ? JSON.parse(decoded.image_list)
+                : (decoded.image_list || []);
+            effectiveImages = image_list_raw;
+        }
+
+        // 实际写盘（复用缓存）
+        for (let i = 0; i < effectiveImages.length; i++) {
+            const url = effectiveImages[i];
             const row = addFileRow({ type: '图片', name: `image_${i + 1}.png`, href: url, durationSec: 0 });
             row.tdStatus.textContent = '下载中…';
             try {
-                const blob = await fetchAsBlob(url);
+                const blob = await fetchAsBlobCached(url);
                 await writeFile(imgDir, `image_${i + 1}.png`, blob);
                 row.tdStatus.innerHTML = '<span class="ok">已保存</span>';
             } catch (e) {
@@ -745,6 +963,7 @@ startBtn.addEventListener('click', async () => {
                 throw new Error(`图片下载失败：${url}；${e.message || e}`);
             }
         }
+
 
         if (bg_url) {
             const row = addFileRow({ type: '背景', name: `bg_image.png`, href: bg_url, durationSec: 0 });
@@ -771,9 +990,10 @@ startBtn.addEventListener('click', async () => {
         const textItems = splitCaptionsToTextItems(caps, audioDurationsUs, { maxChars });
 
         const meta = buildDraftMetaInfo();
+        const imageCount = imageGroups.length ? imageGroups.length : effectiveImages.length;
         const info = buildDraftInfo({
             width: WIDTH, height: HEIGHT, fps, totalUs,
-            audioDurationsUs, imageCount: image_list_raw.length,
+            audioDurationsUs, imageCount,
             textItems,
             preset
         });
@@ -892,4 +1112,75 @@ function normalizeImageListShape(value) {
         }
     }
     return out;
+}
+
+function allSelected() {
+    return imageGroups.length > 0 && selectedByGroup.every((v, i) => !!(v || imageGroups[i][0]));
+}
+
+function renderImageChoice() {
+    if (!imageGroups.length) { imgChoiceCard.classList.add('hidden'); return; }
+    imgChoiceCard.classList.remove('hidden');
+    imgChoiceBody.innerHTML = '';
+
+    imageGroups.forEach((arr, i) => {
+        const chosen = selectedByGroup[i] || arr[0];
+        const row = document.createElement('div');
+        row.className = 'row tight block-gap';
+        row.innerHTML = `
+        <div class="muted" style="width:80px">画面 ${i + 1}</div>
+        <img class="preview-img" src="${chosen}" alt="已选" />
+        <div class="muted">候选 ${arr.length} 张</div>
+        <button class="btn small" data-pick="${i}">选择</button>
+      `;
+        imgChoiceBody.appendChild(row);
+    });
+
+    imgChoiceGoBtn.disabled = !allSelected();
+}
+imgChoiceBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-pick]');
+    if (btn) openPicker(parseInt(btn.dataset.pick, 10));
+});
+
+function openPicker(groupIndex) {
+    pickerIndexEl.textContent = String(groupIndex + 1);
+    pickerThumbs.innerHTML = '';
+    const arr = imageGroups[groupIndex] || [];
+    const current = selectedByGroup[groupIndex] || arr[0];
+
+    arr.forEach((url, j) => {
+        const img = document.createElement('img');
+        img.src = url;
+        img.title = url;
+        img.className = (url === current) ? 'active' : '';
+        img.addEventListener('click', () => {
+            pickerThumbs.querySelectorAll('img').forEach(el => el.classList.remove('active'));
+            img.classList.add('active');
+            pickerThumbs.dataset.selected = String(j);
+        });
+        pickerThumbs.appendChild(img);
+    });
+    pickerThumbs.dataset.selected = String(Math.max(0, (imageGroups[groupIndex] || []).indexOf(current)));
+    imgPickerModal.classList.add('open');
+}
+function closePicker() { imgPickerModal.classList.remove('open'); }
+imgPickerModal?.addEventListener('click', (e) => {
+    if (e.target === imgPickerModal || e.target.classList.contains('modal-close')) closePicker();
+});
+pickerCancel?.addEventListener('click', closePicker);
+pickerOk?.addEventListener('click', () => {
+    const gi = Number(pickerIndexEl.textContent) - 1;
+    const si = Number(pickerThumbs.dataset.selected || 0);
+    selectedByGroup[gi] = imageGroups[gi][si];
+    renderImageChoice(); closePicker();
+});
+
+function waitUserSelection() {
+    return new Promise((resolve) => {
+        const tryEnable = () => { imgChoiceGoBtn.disabled = !allSelected(); };
+        const go = () => { if (!allSelected()) return; imgChoiceGoBtn.removeEventListener('click', go); resolve(); };
+        imgChoiceGoBtn.addEventListener('click', go);
+        tryEnable(); // 初始化一次
+    });
 }
