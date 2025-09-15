@@ -70,20 +70,19 @@
           <input id="secretKey" type="password" placeholder="（必填）" required>
         </div>
 
-        <div class="block-gap field" style="max-width:360px">
+        <!-- <div class="block-gap field" style="max-width:360px">
           <label>类型</label>
           <select id="typeSelect">
             <option value="vertical_story">竖屏故事（1080×1920）</option>
             <option value="horizontal_story">横屏故事（1920×1080）</option>
           </select>
-          <!-- 类型预览 -->
           <div class="type-preview">
             <img id="typePreviewImg" alt="样式预览" />
             <div id="typePreviewCap" class="muted">预览：竖屏故事</div>
           </div>
 
           <div class="muted">类型将自动设置画幅、图片位置与字幕样式/位置。</div>
-        </div>
+        </div> -->
 
         <!-- <div class="block-gap grid2">
           <div class="field">
@@ -116,13 +115,14 @@
     </div>
     <!-- ②.5 图片选择（仅当存在多图项时显示） -->
     <div id="imgChoiceCard" class="card block-gap-lg hidden">
-      <div class="card-h">②.5 图片选择（多图项）</div>
+      <div class="card-h">③ 图片选择（双击图片可预览）</div>
       <div class="card-b" id="imgChoiceBody">
         <!-- JS 渲染每组：已选缩略图 + 候选数 + 选择按钮 -->
       </div>
+
     </div>
     <div class="toolbar block-gap">
-      <button id="imgChoiceContinue" class="btn primary" disabled>继续生成</button>
+      <button id="imgChoiceContinue" class="btn primary hidden" disabled>继续生成</button>
     </div>
 
     <!-- 多图选择 Modal -->
@@ -142,7 +142,7 @@
 
     <!-- ③ 文件状态 -->
     <div id="filesCard" class="card block-gap-lg hidden">
-      <div class="card-h">③ 文件状态</div>
+      <div class="card-h">④ 文件状态</div>
       <div class="card-b">
         <table id="filesTable">
           <thead>
@@ -162,11 +162,11 @@
 
     <!-- ④ 生成结果 -->
     <div id="resultCard" class="card block-gap-lg hidden">
-      <div class="card-h">④ 生成结果</div>
+      <div class="card-h">⑤ 生成结果</div>
       <div class="card-b">
         <div class="row">
           <div class="field" style="max-width:360px">
-            <label>时间戳文件夹</label>
+            <label>草稿文件夹</label>
             <input id="tsOutput" type="text" readonly>
           </div>
           <div class="field">
@@ -175,6 +175,11 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- 页面底部“重新生成” -->
+    <div id="regenBar" class="toolbar block-gap-lg hidden" style="justify-content:center;">
+      <button id="btnRegen" class="btn">重新生成</button>
     </div>
   </div>
 

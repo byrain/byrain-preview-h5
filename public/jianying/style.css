@@ -407,3 +407,66 @@ td.status {
     padding: 6px 10px;
     font-size: 12px;
 }
+
+/* 行式候选：左侧标签 + 右侧四列图片 */
+.img-choice-row {
+    display: grid;
+    grid-template-columns: 140px repeat(4, minmax(72px, 1fr));
+    gap: 12px;
+    align-items: start;
+    /* ← 行内元素顶对齐，避免字幕多行时居中不齐 */
+    margin-top: 10px;
+}
+
+.img-choice-row .label {
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+/* 缩略图：方形、可点击、懒加载 */
+.img-choice-row .thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    /* 正方形 */
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f8fafc;
+    cursor: pointer;
+}
+
+.img-choice-row .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.img-choice-row .thumb:hover {
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, .15) inset;
+}
+
+/* 选中：蓝色描边 */
+.img-choice-row .thumb.active {
+    outline: 3px solid var(--accent);
+    outline-offset: -2px;
+}
+
+/* 左侧：行标题 + 字幕摘要（两行省略） */
+.img-choice-row .label .cap {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* 小屏压缩些列距 */
+@media (max-width: 520px) {
+    .img-choice-row {
+        grid-template-columns: 72px repeat(4, 1fr);
+        gap: 8px;
+    }
+}

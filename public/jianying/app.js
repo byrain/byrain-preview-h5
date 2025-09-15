@@ -68,7 +68,19 @@ function parseImageGroups(value) {
     return groups;
 }
 
+function buildFrameCaptions(decoded, N) {
+    let caps = extractCaptions(decoded) || []; // 你已有的函数：cap_list[].cap / caption / text
+    // 轻度清洗 + 对齐到 N
+    caps = caps.map(s => String(s || '')
+        .replace(/\s+/g, ' ')
+        .replace(/[“”]/g, '"').replace(/[‘’]/g, "'")
+        .trim());
 
+    if (caps.length > N) caps = caps.slice(0, N);
+    if (caps.length < N) caps = caps.concat(Array(N - caps.length).fill(''));
+
+    return caps;
+}
 
 /* ==== FS helpers ==== */
 async function ensureDir(parent, name) { return await parent.getDirectoryHandle(name, { create: true }); }
@@ -157,6 +169,7 @@ function parseImageGroups(value) {
 let imageGroups = [];             // [ [url,url...], [url], ... ]
 let selectedByGroup = [];         // [ chosenUrl or null ]
 const imgPreviewCache = new Map();// url -> Blob（用于复用写盘）
+let frameCaptions = []; // 与每一行画面一一对应的字幕
 
 /* ==== caption extraction ==== */
 function extractCaptions(decoded) {
@@ -415,6 +428,9 @@ imgModal.addEventListener('click', () => imgModal.classList.remove('open'));
 const imgChoiceCard = document.getElementById('imgChoiceCard');
 const imgChoiceBody = document.getElementById('imgChoiceBody');
 const imgChoiceGoBtn = document.getElementById('imgChoiceContinue');
+const imgChoiceContinue = document.getElementById('imgChoiceContinue');
+const regenBar = document.getElementById('regenBar');
+const btnRegen = document.getElementById('btnRegen');
 
 const imgPickerModal = document.getElementById('imgPickerModal');
 const pickerThumbs = document.getElementById('pickerThumbs');
@@ -422,63 +438,13 @@ const pickerIndexEl = document.getElementById('pickerIndex');
 const pickerOk = document.getElementById('pickerOk');
 const pickerCancel = document.getElementById('pickerCancel');
 
-/* 打开/关闭选择弹窗 */
-function openPicker(groupIndex) {
-    pickerIndexEl.textContent = String(groupIndex + 1);
-    pickerThumbs.innerHTML = '';
-    const arr = imageGroups[groupIndex] || [];
-    const current = selectedByGroup[groupIndex] || arr[0];
-
-    arr.forEach((url, j) => {
-        const img = document.createElement('img');
-        img.src = url;
-        img.title = url;
-        img.className = (url === current) ? 'active' : '';
-        img.addEventListener('click', () => {
-            pickerThumbs.querySelectorAll('img').forEach(el => el.classList.remove('active'));
-            img.classList.add('active');
-            pickerThumbs.dataset.selected = String(j);
-        });
-        pickerThumbs.appendChild(img);
-    });
-    pickerThumbs.dataset.selected = String(Math.max(0, (imageGroups[groupIndex] || []).indexOf(current)));
-    imgPickerModal.classList.add('open');
-}
-function closePicker() { imgPickerModal.classList.remove('open'); }
-imgPickerModal?.addEventListener('click', (e) => {
-    if (e.target === imgPickerModal || e.target.classList.contains('modal-close')) closePicker();
-});
-pickerCancel?.addEventListener('click', closePicker);
-pickerOk?.addEventListener('click', () => {
-    const gi = Number(pickerIndexEl.textContent) - 1;
-    const si = Number(pickerThumbs.dataset.selected || 0);
-    selectedByGroup[gi] = imageGroups[gi][si];
-    renderImageChoice(); closePicker();
-});
-
-/* 渲染“图片选择”卡片 */
-function renderImageChoice() {
-    if (!imageGroups.length) { imgChoiceCard.classList.add('hidden'); return; }
-    imgChoiceCard.classList.remove('hidden');
-    imgChoiceBody.innerHTML = '';
-    imageGroups.forEach((arr, i) => {
-        const chosen = selectedByGroup[i] || arr[0];
-        const row = document.createElement('div');
-        row.className = 'row tight block-gap';
-        row.innerHTML = `
-      <div class="muted" style="width:80px">图片 ${i + 1}</div>
-      <img class="preview-img" src="${chosen}" alt="已选" />
-      <div class="muted">候选 ${arr.length} 张</div>
-      <button class="btn small" data-pick="${i}">选择</button>
-    `;
-        imgChoiceBody.appendChild(row);
-    });
-}
-
-/* 代理“选择”按钮点击 */
-imgChoiceBody.addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-pick]');
-    if (btn) openPicker(parseInt(btn.dataset.pick, 10));
+/* 页面加载：确保“继续生成”是隐藏的 */
+imgChoiceContinue?.classList.add('hidden');
+/* 重新生成：刷新页面 */
+btnRegen?.addEventListener('click', () => {
+    // 可选：如果你有 IndexedDB 里记的 handle 想清除，可在这之前做一次清理
+    // await idbSet(HANDLE_KEY, undefined);
+    window.location.reload();
 });
 
 /* 预览下载：缓存 Blob（不写磁盘） */
@@ -849,14 +815,16 @@ function buildDraftInfo({ width, height, fps, totalUs, audioDurationsUs, imageCo
 
 /* ==== core run ==== */
 startBtn.addEventListener('click', async () => {
-    filesCard.classList.remove('hidden');
-    resultCard.classList.remove('hidden');
+    filesCard.classList.add('hidden');
+    resultCard.classList.add('hidden');
 
     errorBox.textContent = '';
-    runStatus.textContent = '处理中…';
+    runStatus.textContent = '';
+    runStatus.classList.add('hidden');
     tbody.innerHTML = '';
     tsOutput.value = '';
-    resultSummary.textContent = '处理中…';
+    resultSummary.textContent = '';
+    startBtn.classList.add('hidden');
 
     try {
         if (!dirHandle) throw new Error('请先选择剪映目录（点击页面顶部的“选择剪映目录”按钮并授权写入）');
@@ -876,7 +844,12 @@ startBtn.addEventListener('click', async () => {
         selectedByGroup = imageGroups.map(arr => arr[0] || null);    // 默认选第一张
         renderImageChoice();
 
-        // 可选：预加载可见候选的 Blob 用于更流畅的最终写盘（不写磁盘）
+        const N = imageGroups.length
+            ? imageGroups.length
+            : (typeof decoded.image_list === 'string'
+                ? (JSON.parse(decoded.image_list) || []).length
+                : (decoded.image_list || []).length);
+        frameCaptions = buildFrameCaptions(decoded, N);
 
         for (const arr of imageGroups) {
             for (const u of arr) { try { await fetchAsBlobCached(u); } catch { } }
@@ -927,6 +900,7 @@ startBtn.addEventListener('click', async () => {
 
         // 预取候选到内存（不落盘）
         if (imageGroups.length) {
+            imgChoiceContinue.classList.remove('hidden');
             renderImageChoice();
             // 预缓存可见候选（并行拉取，加快选择预览）
             const preload = [];
@@ -935,6 +909,8 @@ startBtn.addEventListener('click', async () => {
 
             // 等用户选完，再进入写盘与后续
             await waitUserSelection();
+            filesCard.classList.remove('hidden');
+            resultCard.classList.remove('hidden');
         }
 
         // effectiveImages：最终要落盘的列表
@@ -1119,28 +1095,87 @@ function allSelected() {
 }
 
 function renderImageChoice() {
-    if (!imageGroups.length) { imgChoiceCard.classList.add('hidden'); return; }
+    if (!imageGroups.length) {
+        imgChoiceCard.classList.add('hidden');
+        imgChoiceContinue.classList.add('hidden'); // 没有选择流程就不出现
+        return;
+    }
     imgChoiceCard.classList.remove('hidden');
+    imgChoiceContinue.classList.remove('hidden'); // 有选择流程就出现
     imgChoiceBody.innerHTML = '';
 
-    imageGroups.forEach((arr, i) => {
-        const chosen = selectedByGroup[i] || arr[0];
+    imageGroups.forEach((arr, gi) => {
         const row = document.createElement('div');
-        row.className = 'row tight block-gap';
-        row.innerHTML = `
-        <div class="muted" style="width:80px">画面 ${i + 1}</div>
-        <img class="preview-img" src="${chosen}" alt="已选" />
-        <div class="muted">候选 ${arr.length} 张</div>
-        <button class="btn small" data-pick="${i}">选择</button>
-      `;
+        row.className = 'img-choice-row';
+
+        // 左侧标签：标题 + 字幕摘要
+        const label = document.createElement('div');
+        label.className = 'label';
+        const t = document.createElement('div');
+        t.textContent = `画面 ${gi + 1}`;
+        const capEl = document.createElement('div');
+        const capTextFull = frameCaptions[gi] || '';
+
+        // const capSnippet = [...capTextFull].length > 28
+        //     ? [...capTextFull].slice(0, 28).join('') + '…'
+        //     : capTextFull;
+
+        capEl.className = 'cap';
+        capEl.textContent = capTextFull || '（无字幕）';
+        // capEl.title = capTextFull;           // 悬停看全
+        label.appendChild(t);
+        label.appendChild(capEl);
+        row.appendChild(label);
+
+        // 右侧四列（不够四张就渲染有的）
+        const chosen = selectedByGroup[gi] || arr[0];
+
+        arr.forEach((url, idx) => {
+            const cell = document.createElement('div');
+            cell.className = 'thumb';
+            cell.dataset.group = String(gi);
+            cell.dataset.url = url;
+
+            const img = document.createElement('img');
+            img.title = '单击选中，双击预览';
+            img.loading = 'lazy';
+            img.src = url;
+            img.alt = `画面${gi + 1}-候选${idx + 1}`;
+            cell.appendChild(img);
+
+            if (url === chosen) cell.classList.add('active');
+            row.appendChild(cell);
+        });
+
         imgChoiceBody.appendChild(row);
     });
 
-    imgChoiceGoBtn.disabled = !allSelected();
+    imgChoiceContinue.disabled = !allSelected();
 }
+
 imgChoiceBody.addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-pick]');
-    if (btn) openPicker(parseInt(btn.dataset.pick, 10));
+    const thumb = e.target.closest('.thumb');
+    if (!thumb) return;
+    const gi = parseInt(thumb.dataset.group, 10);
+    const url = thumb.dataset.url;
+
+    selectedByGroup[gi] = url;   // 更新 state
+    // 只更新当前行的选中态（或调用 renderImageChoice() 整体重绘也可以）
+    const row = thumb.closest('.img-choice-row');
+    row.querySelectorAll('.thumb').forEach(el => {
+        el.classList.toggle('active', el.dataset.url === url);
+    });
+
+    imgChoiceContinue.disabled = !allSelected();
+});
+
+// 双击：预览（打开已有的图片 Modal）
+imgChoiceBody.addEventListener('dblclick', (e) => {
+    const thumb = e.target.closest('.thumb');
+    if (!thumb) return;
+    e.preventDefault(); // 避免某些浏览器的默认双击行为
+    imgPreview.src = thumb.dataset.url;   // 复用你的预览弹窗
+    imgModal.classList.add('open');
 });
 
 function openPicker(groupIndex) {
@@ -1178,9 +1213,18 @@ pickerOk?.addEventListener('click', () => {
 
 function waitUserSelection() {
     return new Promise((resolve) => {
-        const tryEnable = () => { imgChoiceGoBtn.disabled = !allSelected(); };
-        const go = () => { if (!allSelected()) return; imgChoiceGoBtn.removeEventListener('click', go); resolve(); };
-        imgChoiceGoBtn.addEventListener('click', go);
-        tryEnable(); // 初始化一次
+        const go = () => {
+            if (!allSelected()) return; // 你已有的全选校验
+            // 1) 隐藏“继续生成”
+            imgChoiceContinue.classList.add('hidden');
+            // 2) 显示“重新生成”按钮
+            regenBar.classList.remove('hidden');
+            // 3) 解绑并继续
+            imgChoiceContinue.removeEventListener('click', go);
+            resolve();
+        };
+        imgChoiceContinue.addEventListener('click', go);
+        // 保持你已有的 disabled 逻辑：未选完前无法点击
+        imgChoiceContinue.disabled = !allSelected();
     });
 }
