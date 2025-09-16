@@ -1,4 +1,5 @@
 /* ==== Chrome gate ==== */
+const WZ = window.__WIZARD_STATE__ || { step: 1 };
 (function () {
     const ua = navigator.userAgent;
     const isChrome = !!window.showDirectoryPicker && /Chrome\/\d+/.test(ua) && !/Edg\//.test(ua) && !/OPR\//.test(ua);
@@ -485,26 +486,40 @@ function updateDirUI() {
     }
 }
 
+// ✅ 在 app.js 的 initHandle() 末尾添加（或确保已存在）
 async function initHandle() {
     try {
         const stored = await idbGet(HANDLE_KEY);
         if (stored) {
             dirHandle = stored;
-            await verifyPermission(dirHandle, true);
+            const ok = await verifyPermission(dirHandle, true);
+            if (!ok) dirHandle = null;   // 权限被回收就作废
         }
-    } catch (e) { console.warn(e); }
+    } catch (e) { console.warn(e); dirHandle = null; }
     updateDirUI();
+
+    // 🆕 向导状态同步 + 刷新按钮可用性
+    if (window.__WIZARD_STATE__) {
+        window.__WIZARD_STATE__.dirHandle = dirHandle || null;
+        window.__refreshStepperButtons && window.__refreshStepperButtons();
+    }
 }
+
 initHandle();
 
+// 在选择目录成功后：
+// 选择剪映目录成功后
 pickBtn.addEventListener('click', async () => {
     try {
         const h = await window.showDirectoryPicker({ id: 'jianying-root' });
         if (!(await verifyPermission(h, true))) { alert('需要写入权限'); return; }
-        dirHandle = h; await idbSet(HANDLE_KEY, h);
-        updateDirUI();
+        dirHandle = h; await idbSet(HANDLE_KEY, h); updateDirUI();
+        // 同步到向导状态，启用“下一步”
+        WZ.dirHandle = dirHandle;
+        window.__refreshStepperButtons && window.__refreshStepperButtons();
     } catch (e) { if (e?.name === 'AbortError') return; alert('选择目录失败：' + (e.message || e)); }
 });
+
 // resetBtn.addEventListener('click', async () => {
 //     await idbSet(HANDLE_KEY, undefined); dirHandle = null; updateDirUI(); alert('已清除记忆，请重新选择剪映目录。');
 // });
@@ -813,37 +828,37 @@ function buildDraftInfo({ width, height, fps, totalUs, audioDurationsUs, imageCo
     };
 }
 
-/* ==== core run ==== */
-startBtn.addEventListener('click', async () => {
-    filesCard.classList.add('hidden');
-    resultCard.classList.add('hidden');
-
+/* 1) 把“开始处理”的大流程拆分：decodeAndPrepare + writeFilesAndFinalize */
+async function decodeAndPrepare() {
+    // 这个函数做你原先 startBtn.click 里“解码 + 解析分组 + 预缓存 + 准备 UI”的部分；
+    // 不进行任何写盘与音频下载。
+    const errorBox = document.getElementById('errorBox');
+    const runStatus = document.getElementById('runStatus');
     errorBox.textContent = '';
     runStatus.textContent = '';
-    runStatus.classList.add('hidden');
-    tbody.innerHTML = '';
-    tsOutput.value = '';
-    resultSummary.textContent = '';
-    startBtn.classList.add('hidden');
 
     try {
-        if (!dirHandle) throw new Error('请先选择剪映目录（点击页面顶部的“选择剪映目录”按钮并授权写入）');
+        if (!dirHandle) throw new Error('请先在第 1 步选择剪映目录');
         if (!(await verifyPermission(dirHandle, true))) throw new Error('没有对剪映目录的写入权限');
+
         const encoded = (encodedInput.value || '').trim();
         const key = (secretKey.value || '').trim();
         if (!encoded) throw new Error('请粘贴加密字符串');
         if (!key) throw new Error('请输入解密密钥');
 
         const decoded = await secureDecode(encoded, key);
-        console.log("解码后内容为：", decoded)
-        // === 解析 image_list 分组并准备选择 UI（不改变主流程） ===
+        console.log('解码后内容：', decoded);
+        WZ.decoded = decoded;
+
+        // 解析 image_list / image_group
         const raw_img_list = (typeof decoded.image_list === 'string')
             ? JSON.parse(decoded.image_list) : (decoded.image_list || []);
-        imageGroups = parseImageGroups(raw_img_list);                // [ [u1,u2], [u3], ... ]
-        if (!imageGroups.length) imageGroups = [];                   // 兼容无图
-        selectedByGroup = imageGroups.map(arr => arr[0] || null);    // 默认选第一张
-        renderImageChoice();
 
+        imageGroups = parseImageGroups(decoded.image_group ?? decoded.image_groups ?? raw_img_list);
+        if (!Array.isArray(imageGroups)) imageGroups = [];
+        selectedByGroup = imageGroups.map(arr => arr[0] || null);
+
+        // 字幕预览对齐
         const N = imageGroups.length
             ? imageGroups.length
             : (typeof decoded.image_list === 'string'
@@ -851,30 +866,79 @@ startBtn.addEventListener('click', async () => {
                 : (decoded.image_list || []).length);
         frameCaptions = buildFrameCaptions(decoded, N);
 
-        for (const arr of imageGroups) {
-            for (const u of arr) { try { await fetchAsBlobCached(u); } catch { } }
+        // 预缓存候选图，提升第 3 步体验（忽略失败）
+        const preload = [];
+        imageGroups.forEach(arr => arr.forEach(u => preload.push(fetchAsBlobCached(u).catch(() => null))));
+        await Promise.all(preload);
+
+        // 渲染选择 UI
+        renderImageChoice();
+
+        // 向导状态同步
+        WZ.hasGroup = imageGroups.length > 0;
+        WZ.allSelected = allSelected;
+
+        runStatus.textContent = '解码成功';
+
+        // 自动跳转：有分组 → 3；无分组 → 直接到 4（等待写盘函数触发）
+        if (window.__goToStep) {
+            window.__goToStep(WZ.hasGroup ? 3 : 4);
+            window.__refreshStepperButtons && window.__refreshStepperButtons();
         }
+    } catch (e) {
+        console.error(e);
+        runStatus.textContent = '出错';
+        errorBox.textContent = '❌ ' + (e?.message || e);
+        WZ.decoded = null;
+        window.__refreshStepperButtons && window.__refreshStepperButtons();
+    }
+}
 
+/* 2) 把写盘部分抽成函数：供第 3 步“生成草稿”与无分组时第 2 步后直接调用 */
+window.writeFilesAndFinalize = async function writeFilesAndFinalize() {
+    const writeError = document.getElementById('writeError');
+    const resultSummary = document.getElementById('resultSummary');
+    const tbody = document.getElementById('filesTbody');
+    const runStatus = document.getElementById('runStatus');
+    writeError.textContent = '';
+    resultSummary.textContent = '处理中…';
 
+    try {
+        const decoded = WZ.decoded;
+        if (!decoded) throw new Error('尚未解码，无法生成');
 
-        const audio_list_raw = typeof decoded.audio_list === 'string' ? JSON.parse(decoded.audio_list) : decoded.audio_list || [];
-        const image_list_raw = typeof decoded.image_list === 'string' ? JSON.parse(decoded.image_list) : decoded.image_list || [];
-        const bg_raw = typeof decoded.bg_image === 'string' ? JSON.parse(decoded.bg_image) : decoded.bg_image;
-        const bg_url = Array.isArray(bg_raw) ? (bg_raw[0]?.image_url || bg_raw[0] || '') : (bg_raw?.image_url || bg_raw || decoded.bg_image || '');
-
-        // 设置画幅
+        // 准备路径与画幅配置
         const preset = TYPE_PRESETS[typeSel?.value] || TYPE_PRESETS.vertical_story;
         const WIDTH = preset.width;
         const HEIGHT = preset.height;
         const fps = 30;
 
-        const stamp = tsNow(); tsOutput.value = stamp;
-        const draftRoot = await ensureDir(dirHandle, stamp);
+        // 目录准备（复用同一时间戳可覆盖重写）
+        if (!WZ.stamp) WZ.stamp = tsNow();
+        tsOutput.value = WZ.stamp;
+        const draftRoot = await ensureDir(dirHandle, WZ.stamp);
         const assetsDir = await ensureDir(draftRoot, 'assets');
         const audioDir = await ensureDir(assetsDir, 'audio');
         const imgDir = await ensureDir(assetsDir, 'images');
         const bgDir = await ensureDir(assetsDir, 'bg');
 
+        tbody.innerHTML = '';
+
+        // 解析音频/图片/背景
+        const audio_list_raw = typeof decoded.audio_list === 'string' ? JSON.parse(decoded.audio_list) : decoded.audio_list || [];
+        const bg_raw = typeof decoded.bg_image === 'string' ? JSON.parse(decoded.bg_image) : decoded.bg_image;
+        const bg_url = Array.isArray(bg_raw) ? (bg_raw[0]?.image_url || bg_raw[0] || '') : (bg_raw?.image_url || bg_raw || decoded.bg_image || '');
+
+        // 最终图片（分组选中 or 旧逻辑）
+        let effectiveImages;
+        if (imageGroups.length) {
+            effectiveImages = imageGroups.map((arr, i) => selectedByGroup[i] || arr[0] || '');
+        } else {
+            const image_list_raw = typeof decoded.image_list === 'string' ? JSON.parse(decoded.image_list) : (decoded.image_list || []);
+            effectiveImages = image_list_raw;
+        }
+
+        // 下载音频、取时长并写盘
         const audioDurationsSec = [];
         for (let i = 0; i < audio_list_raw.length; i++) {
             const url = audio_list_raw[i];
@@ -893,39 +957,7 @@ startBtn.addEventListener('click', async () => {
             }
         }
 
-        // 解析 image_group（若存在）并准备候选
-        let groupsRaw = decoded.image_groups ?? decoded.image_group; // 你可能在 secureDecode 里已标准到 image_groups
-        imageGroups = parseImageGroups(groupsRaw);                    // 每组最多 4 张
-        selectedByGroup = imageGroups.map(arr => arr[0] || null);
-
-        // 预取候选到内存（不落盘）
-        if (imageGroups.length) {
-            imgChoiceContinue.classList.remove('hidden');
-            renderImageChoice();
-            // 预缓存可见候选（并行拉取，加快选择预览）
-            const preload = [];
-            imageGroups.forEach(arr => arr.forEach(u => preload.push(fetchAsBlobCached(u).catch(() => null))));
-            await Promise.all(preload);
-
-            // 等用户选完，再进入写盘与后续
-            await waitUserSelection();
-            filesCard.classList.remove('hidden');
-            resultCard.classList.remove('hidden');
-        }
-
-        // effectiveImages：最终要落盘的列表
-        let effectiveImages;
-        if (imageGroups.length) {
-            effectiveImages = imageGroups.map((arr, i) => selectedByGroup[i] || arr[0] || '');
-        } else {
-            // 没有 image_group：保持现有逻辑（字符串数组）
-            const image_list_raw = typeof decoded.image_list === 'string'
-                ? JSON.parse(decoded.image_list)
-                : (decoded.image_list || []);
-            effectiveImages = image_list_raw;
-        }
-
-        // 实际写盘（复用缓存）
+        // 写入选中图片
         for (let i = 0; i < effectiveImages.length; i++) {
             const url = effectiveImages[i];
             const row = addFileRow({ type: '图片', name: `image_${i + 1}.png`, href: url, durationSec: 0 });
@@ -940,7 +972,7 @@ startBtn.addEventListener('click', async () => {
             }
         }
 
-
+        // 背景
         if (bg_url) {
             const row = addFileRow({ type: '背景', name: `bg_image.png`, href: bg_url, durationSec: 0 });
             row.tdStatus.textContent = '下载中…';
@@ -954,6 +986,7 @@ startBtn.addEventListener('click', async () => {
             }
         }
 
+        // 组装草稿 JSON
         const audioDurationsUs = audioDurationsSec.map(toUS);
         const totalSec = audioDurationsSec.reduce((a, b) => a + b, 0);
         const totalUs = toUS(totalSec);
@@ -977,16 +1010,26 @@ startBtn.addEventListener('click', async () => {
         await writeFile(draftRoot, 'draft_meta_info.json', new Blob([JSON.stringify(meta, null, 2)], { type: 'application/json' }));
         await writeFile(draftRoot, 'draft_info.json', new Blob([JSON.stringify(info, null, 2)], { type: 'application/json' }));
 
-        runStatus.textContent = '完成';
-        resultSummary.innerHTML = `已生成：<code>${stamp}</code><br/>类型：<b>${preset.label}</b>；总时长：<b>${totalSec.toFixed(3)}s</b>；音频：${audioDurationsSec.length} 个；图片：${image_list_raw.length} 张；画幅：${WIDTH}×${HEIGHT}；字幕片段：${textItems.length}（maxChars=${maxChars}）`;
+        // 结果摘要
+        const image_list_raw = typeof decoded.image_list === 'string' ? JSON.parse(decoded.image_list) : (decoded.image_list || []);
+        resultSummary.innerHTML = `已生成：<code>${WZ.stamp}</code><br/>总时长：<b>${totalSec.toFixed(3)}s</b>；音频：${audioDurationsSec.length} 个；图片：${image_list_raw.length} 张；字幕片段：${textItems.length}（maxChars=${maxChars}）`;
 
+        // 导航至第 4 步
+        if (window.__goToStep) window.__goToStep(4);
     } catch (e) {
         console.error(e);
+        writeError.textContent = '❌ ' + (e?.message || e);
+        const runStatus = document.getElementById('runStatus');
         runStatus.textContent = '出错';
-        errorBox.textContent = '❌ ' + (e?.message || e);
     } finally {
-        updateStartBtnDisabled(); // 根据密钥是否为空恢复状态
+        window.__refreshStepperButtons && window.__refreshStepperButtons();
     }
+}
+
+
+/* ==== core run ==== */
+startBtn.addEventListener('click', async () => {
+    await decodeAndPrepare();
 });
 
 /* ==== Help image (draft path guide) ==== */
@@ -1095,41 +1138,49 @@ function allSelected() {
 }
 
 function renderImageChoice() {
+    const body = document.getElementById('imgChoiceBody');
+    // 这两个在向导版里可能不存在，必须判空
+    const card = document.getElementById('imgChoiceCard');
+    const continueBtn = document.getElementById('imgChoiceContinue');
+
+    if (!body) return; // 向导版只要求有 body
+
+    // 无分组：清空并隐藏旧卡片/继续按钮（如果有）
     if (!imageGroups.length) {
-        imgChoiceCard.classList.add('hidden');
-        imgChoiceContinue.classList.add('hidden'); // 没有选择流程就不出现
+        body.innerHTML = '';
+        if (card) card.classList.add('hidden');
+        if (continueBtn) continueBtn.classList.add('hidden');
+        // 同步向导按钮状态
+        if (window.__WIZARD_STATE__) {
+            window.__WIZARD_STATE__.allSelected = () => true; // 无需选图，视为已满足
+            window.__refreshStepperButtons && window.__refreshStepperButtons();
+        }
         return;
     }
-    imgChoiceCard.classList.remove('hidden');
-    imgChoiceContinue.classList.remove('hidden'); // 有选择流程就出现
-    imgChoiceBody.innerHTML = '';
 
+    // 有分组：显示卡片（若存在），渲染缩略图
+    if (card) card.classList.remove('hidden');
+    if (continueBtn) continueBtn.classList.remove('hidden');
+
+    body.innerHTML = '';
     imageGroups.forEach((arr, gi) => {
         const row = document.createElement('div');
         row.className = 'img-choice-row';
 
-        // 左侧标签：标题 + 字幕摘要
+        // 左侧：标题 + 字幕（与第 gi 行对齐）
         const label = document.createElement('div');
         label.className = 'label';
         const t = document.createElement('div');
         t.textContent = `画面 ${gi + 1}`;
         const capEl = document.createElement('div');
-        const capTextFull = frameCaptions[gi] || '';
-
-        // const capSnippet = [...capTextFull].length > 28
-        //     ? [...capTextFull].slice(0, 28).join('') + '…'
-        //     : capTextFull;
-
         capEl.className = 'cap';
-        capEl.textContent = capTextFull || '（无字幕）';
-        // capEl.title = capTextFull;           // 悬停看全
+        capEl.textContent = frameCaptions[gi] || '（无字幕）';
         label.appendChild(t);
         label.appendChild(capEl);
         row.appendChild(label);
 
-        // 右侧四列（不够四张就渲染有的）
+        // 右侧：候选 ≤4
         const chosen = selectedByGroup[gi] || arr[0];
-
         arr.forEach((url, idx) => {
             const cell = document.createElement('div');
             cell.className = 'thumb';
@@ -1147,35 +1198,42 @@ function renderImageChoice() {
             row.appendChild(cell);
         });
 
-        imgChoiceBody.appendChild(row);
+        body.appendChild(row);
     });
 
-    imgChoiceContinue.disabled = !allSelected();
+    // 刷新下一步按钮可用性（向导版）
+    if (window.__WIZARD_STATE__) {
+        window.__WIZARD_STATE__.allSelected = allSelected;
+        window.__refreshStepperButtons && window.__refreshStepperButtons();
+    }
+
+    // 兼容旧流程：如果仍存在“继续生成”按钮，则维持其禁用逻辑
+    if (continueBtn) continueBtn.disabled = !allSelected();
 }
+
 
 imgChoiceBody.addEventListener('click', (e) => {
     const thumb = e.target.closest('.thumb');
     if (!thumb) return;
-    const gi = parseInt(thumb.dataset.group, 10);
+    const gi = Number(thumb.dataset.group);
     const url = thumb.dataset.url;
+    selectedByGroup[gi] = url;
 
-    selectedByGroup[gi] = url;   // 更新 state
-    // 只更新当前行的选中态（或调用 renderImageChoice() 整体重绘也可以）
+
     const row = thumb.closest('.img-choice-row');
-    row.querySelectorAll('.thumb').forEach(el => {
-        el.classList.toggle('active', el.dataset.url === url);
-    });
-
-    imgChoiceContinue.disabled = !allSelected();
+    if (row) {
+        row.querySelectorAll('.thumb').forEach(el => {
+            el.classList.toggle('active', el.dataset.url === url);
+        });
+    }
+    if (window.__refreshStepperButtons) window.__refreshStepperButtons();
 });
 
 // 双击：预览（打开已有的图片 Modal）
 imgChoiceBody.addEventListener('dblclick', (e) => {
     const thumb = e.target.closest('.thumb');
-    if (!thumb) return;
-    e.preventDefault(); // 避免某些浏览器的默认双击行为
-    imgPreview.src = thumb.dataset.url;   // 复用你的预览弹窗
-    imgModal.classList.add('open');
+    if (thumb) { imgPreview.src = thumb.dataset.url; imgModal.classList.add('open'); }
+    window.__refreshStepperButtons && window.__refreshStepperButtons();
 });
 
 function openPicker(groupIndex) {

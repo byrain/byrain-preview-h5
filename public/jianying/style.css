@@ -331,10 +331,6 @@ td.status {
     border-radius: 2px;
 }
 
-/* 隐藏包含 #jyPathDisplay 的整块“已选择（只读展示）”区域 */
-.field:has(#jyPathDisplay) {
-    display: none;
-}
 
 /* 顺便把它后面紧跟的空白也去掉（如果有） */
 .field:has(#jyPathDisplay)+.spacer {

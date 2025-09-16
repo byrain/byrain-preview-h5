@@ -5,181 +5,261 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Web 版剪映草稿生成</title>
+  <title>Web 版剪映草稿生成 · 向导版</title>
   <link rel="stylesheet" href="./style.css" />
+  <style>
+    /* ====== Stepper 追加样式（在原 style.css 基础上补充） ====== */
+    .stepper {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stepper .inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 10px 16px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .step-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--muted);
+      user-select: none;
+    }
+
+    .step-pill .num {
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .step-pill.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, .08) inset;
+      color: var(--fg);
+    }
+
+    .step-pill.active .num {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .step-pill.done {
+      color: #166534;
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+    }
+
+    .step-pill.done .num {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: #fff;
+    }
+
+    .stepper-actions {
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+      background: rgba(255, 255, 255, .9);
+      backdrop-filter: saturate(100%) blur(6px);
+      border-top: 1px solid var(--border);
+    }
+
+    .stepper-actions .inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 10px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .stepper-actions .spacer {
+      flex: 1;
+    }
+
+    [data-step] {
+      display: none;
+    }
+
+    [data-step].active {
+      display: block;
+    }
+
+    /* 让文件状态/结果在第4步显示为并列布局（大屏时） */
+    @media (min-width: 1024px) {
+      .step4-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+    }
+  </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <h1>Web 版剪映草稿生成</h1>
-
-    <!-- ① 选择并授权剪映目录 -->
-    <div class="card">
-      <div class="card-h">① 选择剪映目录</div>
-      <div class="card-b">
-        <div class="row">
-          <button id="pickJY" class="btn btn-select">选择剪映草稿目录</button>
-          <!-- <div class="right toolbar">
-            <button id="resetAll" class="btn danger">清除记忆并重选</button>
-          </div> -->
-        </div>
-
-        <div class="spacer"></div>
-
-        <!-- 动态提示：未选择 / 已选择 -->
-        <div id="jyHintNotSelected" class="callout warn">
-          请点击<strong>“选择剪映草稿目录”</strong>，并在弹出的系统对话框中授权写入。
-          </br>
-          <button id="openHelpLink" class="linklike" type="button" aria-label="查看操作指引">如何查看我的剪映草稿目录？</button>
-
-        </div>
-        <div id="jyHintSelected" class="callout ok hidden">
-          已选择并授权写入。
-        </div>
-
-        <div class="spacer"></div>
-
-        <div class="field">
-          <label class="muted">已选择（只读展示）</label>
-          <div id="jyPathDisplay" class="dir-display muted">尚未选择</div>
-        </div>
-
-        <!-- <div class="spacer"></div>
-        <div class="row">
-          <button id="openHelp" class="btn ghost">查看“草稿目录”位置指引</button>
-        </div> -->
-        <!-- <div class="note muted">
-          不知道剪映草稿目录在哪？一般在
-          <code>（用户目录）/Movies/JianyingPro/User Data/Projects/com.lveditor.draft</code>。<br />
-          点击上面的“选择剪映目录”，授权后我们会在其中新建一个以时间戳命名的草稿文件夹。
-        </div> -->
-      </div>
+  <div class="stepper" role="navigation" aria-label="步骤进度">
+    <div class="inner" id="stepPills">
+      <div class="step-pill active" data-pill="1" aria-current="step"><span class="num">1</span><span>选择目录</span></div>
+      <div class="step-pill" data-pill="2"><span class="num">2</span><span>输入与解码</span></div>
+      <div class="step-pill" data-pill="3"><span class="num">3</span><span>图片选择</span></div>
+      <div class="step-pill" data-pill="4"><span class="num">4</span><span>生成与结果</span></div>
     </div>
+  </div>
 
-    <!-- ② 输入与配置 -->
-    <div class="card block-gap-lg">
-      <div class="card-h">② 输入与配置</div>
-      <div class="card-b">
-        <div class="field">
-          <label>加密字符串（未解码）</label>
-          <textarea id="encodedInput" placeholder="把 COZE 输出的加密字符串粘贴到这里"></textarea>
+  <div class="wrap">
+    <h1>Web 版剪映草稿生成 · 四步向导</h1>
+
+    <!-- Step 1: 选择目录 -->
+    <section id="step1" data-step="1" class="active" aria-labelledby="s1">
+      <div class="card">
+        <div class="card-h" id="s1">① 选择剪映目录</div>
+        <div class="card-b">
+          <div class="row">
+            <button id="pickJY" class="btn btn-select">选择剪映草稿目录</button>
+          </div>
+
+          <div class="spacer"></div>
+
+          <!-- 动态提示：未选择 / 已选择 -->
+          <div id="jyHintNotSelected" class="callout warn">
+            请点击<strong>“选择剪映草稿目录”</strong>，并在弹出的系统对话框中授权写入。
+            </br>
+            <button id="openHelpLink" class="linklike" type="button" aria-label="查看操作指引">如何查看我的剪映草稿目录？</button>
+          </div>
+          <div id="jyHintSelected" class="callout ok hidden">已选择并授权写入。</div>
+
+          <div class="spacer"></div>
+
+          <div class="field">
+            <label class="muted">已选择（只读展示）</label>
+            <div id="jyPathDisplay" class="dir-display muted">尚未选择</div>
+          </div>
         </div>
+      </div>
+    </section>
 
-        <div class="block-gap field">
-          <label>解密密钥</label>
-          <input id="secretKey" type="password" placeholder="（必填）" required>
+    <!-- Step 2: 输入与配置（只做解码与准备，不写盘） -->
+    <section id="step2" data-step="2" aria-labelledby="s2">
+      <div class="card">
+        <div class="card-h" id="s2">② 输入与配置</div>
+        <div class="card-b">
+          <div class="field">
+            <label>加密字符串（未解码）</label>
+            <textarea id="encodedInput" placeholder="把 COZE 输出的加密字符串粘贴到这里"></textarea>
+          </div>
+
+          <div class="block-gap field">
+            <label>解密密钥</label>
+            <input id="secretKey" type="password" placeholder="（必填）" required>
+          </div>
+
+          <div class="block-gap field" style="max-width:340px">
+            <label>字幕每片最大字数（建议 12–16）</label>
+            <input id="maxChars" type="number" min="6" max="40" step="1" value="14" />
+            <div class="muted">用于过长字幕的自动切分，切分后会按字符占比分配时长，并与音频严格对齐。</div>
+          </div>
+
+          <div class="block-gap toolbar">
+            <button id="startBtn" class="btn primary">解码</button>
+            <div id="runStatus" class="muted"></div>
+          </div>
+          <div id="errorBox" class="error block-gap"></div>
         </div>
+      </div>
 
-        <!-- <div class="block-gap field" style="max-width:360px">
-          <label>类型</label>
-          <select id="typeSelect">
-            <option value="vertical_story">竖屏故事（1080×1920）</option>
-            <option value="horizontal_story">横屏故事（1920×1080）</option>
-          </select>
+      <!-- 预览：类型演示（如需开启，可解开注释）
+      <div class="card block-gap">
+        <div class="card-h">样式预览</div>
+        <div class="card-b">
           <div class="type-preview">
             <img id="typePreviewImg" alt="样式预览" />
-            <div id="typePreviewCap" class="muted">预览：竖屏故事</div>
+            <div id="typePreviewCap" class="muted">预览</div>
           </div>
+        </div>
+      </div> -->
+    </section>
 
-          <div class="muted">类型将自动设置画幅、图片位置与字幕样式/位置。</div>
-        </div> -->
+    <!-- Step 3: 图片选择（仅当存在 image_group 时展示内容） -->
+    <section id="step3" data-step="3" aria-labelledby="s3">
+      <div class="card">
+        <div class="card-h" id="s3">③ 图片选择（双击图片可预览）</div>
+        <div class="card-b" id="imgChoiceBody"></div>
+        <div class="card-b muted" id="imgChoiceHint">若本次任务未提供分组图片，将会自动跳过此步骤。</div>
+      </div>
+    </section>
 
-        <!-- <div class="block-gap grid2">
-          <div class="field">
-            <label>主题（暂未实现）</label>
-            <select id="theme">
-              <option value="default">默认</option>
-              <option value="dark">暗色</option>
-            </select>
+    <!-- Step 4: 文件状态 + 结果 -->
+    <section id="step4" data-step="4" aria-labelledby="s4">
+      <div class="step4-grid">
+        <div class="card" id="filesCard">
+          <div class="card-h" id="s4">④ 文件状态</div>
+          <div class="card-b">
+            <table id="filesTable">
+              <thead>
+                <tr>
+                  <th style="width:90px">类型</th>
+                  <th>名称</th>
+                  <th style="width:80px">时长</th>
+                  <th style="width:120px">小预览</th>
+                  <th style="width:120px">状态</th>
+                </tr>
+              </thead>
+              <tbody id="filesTbody"></tbody>
+            </table>
+            <div id="writeError" class="error block-gap"></div>
           </div>
-          <div class="field">
-            <label>画幅（暂未实现）</label>
-            <select id="aspect">
-              <option value="1080x1920">1080 × 1920</option>
-              <option value="1200x1600">1200 × 1600</option>
-            </select>
-          </div>
-        </div> -->
-
-        <div class="block-gap field" style="max-width:340px">
-          <label>字幕每片最大字数（建议 12–16）</label>
-          <input id="maxChars" type="number" min="6" max="40" step="1" value="14" />
-          <div class="muted">用于过长字幕的自动切分，切分后会按字符占比分配时长，并与音频严格对齐。</div>
         </div>
 
-        <div class="block-gap toolbar">
-          <button id="startBtn" class="btn primary">开始处理</button>
-          <div id="runStatus" class="muted"></div>
-        </div>
-      </div>
-    </div>
-    <!-- ②.5 图片选择（仅当存在多图项时显示） -->
-    <div id="imgChoiceCard" class="card block-gap-lg hidden">
-      <div class="card-h">③ 图片选择（双击图片可预览）</div>
-      <div class="card-b" id="imgChoiceBody">
-        <!-- JS 渲染每组：已选缩略图 + 候选数 + 选择按钮 -->
-      </div>
-
-    </div>
-    <div class="toolbar block-gap">
-      <button id="imgChoiceContinue" class="btn primary hidden" disabled>继续生成</button>
-    </div>
-
-    <!-- 多图选择 Modal -->
-    <div id="imgPickerModal" class="modal" role="dialog" aria-modal="true">
-      <div class="modal-inner picker">
-        <div class="row">
-          <div class="muted">选择图片 —— 第 <span id="pickerIndex">1</span> 组</div>
-          <button class="modal-close btn ghost right">关闭</button>
-        </div>
-        <div id="pickerThumbs" class="thumb-grid block-gap"></div>
-        <div class="toolbar block-gap">
-          <button id="pickerOk" class="btn primary">确定</button>
-          <button id="pickerCancel" class="btn">取消</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ③ 文件状态 -->
-    <div id="filesCard" class="card block-gap-lg hidden">
-      <div class="card-h">④ 文件状态</div>
-      <div class="card-b">
-        <table id="filesTable">
-          <thead>
-            <tr>
-              <th style="width:90px">类型</th>
-              <th>名称</th>
-              <th style="width:80px">时长</th>
-              <th style="width:120px">小预览</th>
-              <th style="width:120px">状态</th>
-            </tr>
-          </thead>
-          <tbody id="filesTbody"></tbody>
-        </table>
-        <div id="errorBox" class="error block-gap"></div>
-      </div>
-    </div>
-
-    <!-- ④ 生成结果 -->
-    <div id="resultCard" class="card block-gap-lg hidden">
-      <div class="card-h">⑤ 生成结果</div>
-      <div class="card-b">
-        <div class="row">
-          <div class="field" style="max-width:360px">
-            <label>草稿文件夹</label>
-            <input id="tsOutput" type="text" readonly>
-          </div>
-          <div class="field">
-            <label>结果摘要</label>
-            <div id="resultSummary" class="note muted">未开始</div>
+        <div class="card" id="resultCard">
+          <div class="card-h">⑤ 生成结果</div>
+          <div class="card-b">
+            <div class="row">
+              <div class="field" style="max-width:360px">
+                <label>草稿文件夹</label>
+                <input id="tsOutput" type="text" readonly>
+              </div>
+              <div class="field">
+                <label>结果摘要</label>
+                <div id="resultSummary" class="note muted">尚未生成</div>
+              </div>
+            </div>
+            <div class="toolbar block-gap" style="justify-content:center;">
+              <button id="btnRegen" class="btn">重新生成（刷新页面）</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
+  </div>
 
-    <!-- 页面底部“重新生成” -->
-    <div id="regenBar" class="toolbar block-gap-lg hidden" style="justify-content:center;">
-      <button id="btnRegen" class="btn">重新生成</button>
+  <!-- 全局底部操作条（上一步 / 下一步） -->
+  <div class="stepper-actions" aria-label="步骤操作">
+    <div class="inner">
+      <button id="btnBack" class="btn" type="button">上一步</button>
+      <div class="spacer"></div>
+      <button id="btnNext" class="btn primary" type="button">下一步</button>
     </div>
   </div>
 
@@ -196,7 +276,101 @@
     </div>
   </div>
 
-  <!-- 普通脚本，避免 file:// 下 ES Module 的 CORS 限制 -->
+  <script>
+    /*
+     * 这段 <script> 只负责“向导状态管理 + 按钮启用逻辑 + 与 app.js 的桥接”。
+     * 业务逻辑（解码、下载、写盘、构建草稿）仍在 app.js 中。
+     */
+    window.__WIZARD_STATE__ = {
+      step: 1,
+      // 以下字段由 app.js 在运行时补充/维护
+      dirHandle: null,
+      decoded: null,
+      hasGroup: false,
+      allSelected: () => false
+    };
+
+    (function wizard() {
+      const $ = (s) => document.querySelector(s);
+      const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+      const pills = $$('#stepPills .step-pill');
+      const sections = $$('#step1, #step2, #step3, #step4');
+      const btnBack = $('#btnBack');
+      const btnNext = $('#btnNext');
+
+      function setPill(i, clsAdd) {
+        const el = pills[i - 1];
+        if (!el) return;
+        el.classList.remove('active', 'done');
+        clsAdd && el.classList.add(clsAdd);
+        el.setAttribute('aria-current', clsAdd === 'active' ? 'step' : 'false');
+      }
+
+      function goToStep(n) {
+        const st = window.__WIZARD_STATE__;
+        st.step = Math.max(1, Math.min(4, n));
+        sections.forEach(sec => sec.classList.toggle('active', sec.dataset.step == st.step));
+
+        // 顶部 pills
+        for (let i = 1; i <= 4; i++) {
+          if (i < st.step) setPill(i, 'done');
+          else if (i === st.step) setPill(i, 'active');
+          else setPill(i);
+        }
+
+        // 按钮文案与可用性
+        btnBack.disabled = st.step === 1;
+        if (st.step === 1) {
+          btnNext.textContent = '下一步';
+          btnNext.disabled = !(st.dirHandle); // 只有选择过并授权后才可下一步
+        } else if (st.step === 2) {
+          btnNext.textContent = '下一步';
+          // 只有解码成功后（app.js 会把 decoded 填好）才可下一步
+          btnNext.disabled = !st.decoded; // 成功解码后自动跳步，这里留兜底
+        } else if (st.step === 3) {
+          btnNext.textContent = '生成草稿';
+          btnNext.disabled = !st.allSelected();
+        } else if (st.step === 4) {
+          btnNext.textContent = '完成';
+          btnNext.disabled = true; // 结果页不再前进
+        }
+      }
+
+      btnBack.addEventListener('click', () => {
+        const st = window.__WIZARD_STATE__;
+        if (st.step === 4 && st.hasGroup) return goToStep(3);
+        if (st.step === 3) return goToStep(2);
+        if (st.step === 2) return goToStep(1);
+      });
+
+      btnNext.addEventListener('click', async () => {
+        const st = window.__WIZARD_STATE__;
+        if (st.step === 1) return goToStep(2);
+        if (st.step === 2) {
+          // 正常情况下，解码按钮会自动跳步；这里兜底（若用户没点解码就点下一步）
+          const decodeBtn = document.getElementById('startBtn');
+          if (decodeBtn && !st.decoded) decodeBtn.click();
+          return; // 让 app.js 的解码流程决定是否跳到 3/4
+        }
+        if (st.step === 3) {
+          // 触发写盘（由 app.js 暴露的函数）
+          if (window.writeFilesAndFinalize) {
+            btnNext.disabled = true;
+            try { await window.writeFilesAndFinalize(); } finally { btnNext.disabled = false; }
+          }
+          return;
+        }
+      });
+
+      // 暴露供 app.js 调用
+      window.__goToStep = goToStep;
+      window.__refreshStepperButtons = () => goToStep(window.__WIZARD_STATE__.step);
+
+      // 首次渲染
+      goToStep(1);
+    })();
+  </script>
   <script src="./app.js"></script>
 </body>
 
