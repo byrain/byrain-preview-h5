@@ -189,16 +189,23 @@
         </div>
       </div>
 
-      <!-- 预览：类型演示（如需开启，可解开注释）
       <div class="card block-gap">
-        <div class="card-h">样式预览</div>
-        <div class="card-b">
+        <div class="card-h">样式与画幅</div>
+        <div class="card-b grid2">
+          <div class="field" style="max-width:360px">
+            <label>类型</label>
+            <select id="typeSelect">
+              <option value="vertical_story">竖屏故事（1080×1920）</option>
+              <option value="horizontal_story">横屏故事（1920×1080）</option>
+            </select>
+            <div class="muted">会自动设置画布尺寸、图片缩放/位置与字幕样式/位置。</div>
+          </div>
           <div class="type-preview">
             <img id="typePreviewImg" alt="样式预览" />
             <div id="typePreviewCap" class="muted">预览</div>
           </div>
         </div>
-      </div> -->
+      </div>
     </section>
 
     <!-- Step 3: 图片选择（仅当存在 image_group 时展示内容） -->
